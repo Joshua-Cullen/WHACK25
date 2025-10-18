@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 60px 40px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-box:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-box.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .upload-box h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upload-box p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .viewer-section {
+            display: none;
+            padding: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #764ba2;
+        }
+
+        .page-info {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        .page-wrapper {
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            background: white;
+        }
+
+        .pdf-canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .text-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            opacity: 0;
+            line-height: 1.0;
+            mix-blend-mode: multiply;
+        }
+
+        .text-layer > span {
+            color: black;
+            position: absolute;
+            white-space: pre;
+            cursor: text;
+            transform-origin: 0% 0%;
+        }
+
+        .text-layer ::selection {
+            background: rgba(0, 123, 255, 0.5);
+        }
+        
+        .text-layer:hover {
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 PDF Viewer</h1>
+            <p>Upload and view your PDF documents with copyable text</p>
+        </div>
+
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-box" id="uploadBox">
+                <div class="upload-icon">📁</div>
+                <h2>Drop your PDF here</h2>
+                <p>or click to browse</p>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+                <input type="file" id="fileInput" accept=".pdf" />
+            </div>
+        </div>
+
+        <div class="viewer-section" id="viewerSection">
+            <div class="controls">
+                <span class="page-info">
+                    Total Pages: <span id="totalPages">0</span>
+                </span>
+                <button id="zoomOut">Zoom Out</button>
+                <button id="zoomIn">Zoom In</button>
+                <button id="newPdf">Upload New PDF</button>
+            </div>
+            <div class="canvas-container" id="canvasContainer">
+            </div>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            Loading PDF...
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let scale = 1.5;
+        const canvasContainer = document.getElementById('canvasContainer');
+
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const viewerSection = document.getElementById('viewerSection');
+        const loading = document.getElementById('loading');
+
+        // Drag and drop handlers
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('dragover');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                loadPDF(files[0]);
+            }
+        });
+
+        uploadBox.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                loadPDF(e.target.files[0]);
+            }
+        });
+
+        function loadPDF(file) {
+            loading.style.display = 'block';
+            uploadSection.style.display = 'none';
+            viewerSection.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const typedarray = new Uint8Array(e.target.result);
+                
+                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                    pdfDoc = pdf;
+                    document.getElementById('totalPages').textContent = pdf.numPages;
+                    loading.style.display = 'none';
+                    viewerSection.style.display = 'block';
+                    renderAllPages();
+                }).catch(err => {
+                    console.error('Error loading PDF:', err);
+                    alert('Error loading PDF. Please try another file.');
+                    loading.style.display = 'none';
+                    uploadSection.style.display = 'block';
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderAllPages() {
+            canvasContainer.innerHTML = '';
+            
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                const pageWrapper = document.createElement('div');
+                pageWrapper.className = 'page-wrapper';
+                
+                const canvas = document.createElement('canvas');
+                canvas.className = 'pdf-canvas';
+                
+                const textLayer = document.createElement('div');
+                textLayer.className = 'text-layer';
+                
+                pageWrapper.appendChild(canvas);
+                pageWrapper.appendChild(textLayer);
+                canvasContainer.appendChild(pageWrapper);
+                
+                renderPage(pageNum, canvas, textLayer);
+            }
+        }
+
+        async function renderPage(num, canvas, textLayer) {
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: scale });
+            
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            textLayer.style.width = viewport.width + 'px';
+            textLayer.style.height = viewport.height + 'px';
+
+            const renderContext = {
+                canvasContext: canvas.getContext('2d'),
+                viewport: viewport
+            };
+
+            await page.render(renderContext).promise;
+            
+            // Render text layer
+            const textContent = await page.getTextContent();
+            textLayer.innerHTML = '';
+            
+            textContent.items.forEach(item => {
+                if (!item.str.trim()) return; // Skip empty strings
+                
+                const span = document.createElement('span');
+                const tx = pdfjsLib.Util.transform(
+                    viewport.transform,
+                    item.transform
+                );
+                
+                const fontHeight = Math.sqrt((tx[2] * tx[2]) + (tx[3] * tx[3]));
+                const fontWidth = Math.sqrt((tx[0] * tx[0]) + (tx[1] * tx[1]));
+                
+                span.style.left = tx[4] + 'px';
+                span.style.top = (tx[5] - fontHeight) + 'px';
+                span.style.fontSize = fontHeight + 'px';
+                span.style.transform = 'scaleX(' + (fontWidth / fontHeight) + ')';
+                span.textContent = item.str;
+                
+                textLayer.appendChild(span);
+            });
+        }
+
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            scale += 0.25;
+            renderAllPages();
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            if (scale > 0.5) {
+                scale -= 0.25;
+                renderAllPages();
+            }
+        });
+
+        document.getElementById('newPdf').addEventListener('click', () => {
+            viewerSection.style.display = 'none';
+            uploadSection.style.display = 'block';
+            pdfDoc = null;
+            scale = 1.5;
+            fileInput.value = '';
+            canvasContainer.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
