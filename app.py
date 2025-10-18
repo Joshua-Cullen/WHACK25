@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_from_directory
+from flask import Flask, render_template, request, redirect
 from gemini import queryGemini
 import json
 
@@ -16,11 +16,7 @@ def submit():
     response = queryGemini(pdf.filename)
     response = json.loads(response)
 
-    return render_template("display_html.html", response=response, pdf_filename=pdf.filename)
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory('uploads', filename)
+    return render_template("display_html.html", response=response)
 
 if __name__ == "__main__":
     app.run(debug=True)
