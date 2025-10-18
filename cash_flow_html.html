@@ -1,41 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cash Flow Tool</title>
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
-      rel="stylesheet" 
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cash Flow Tool — Date Controls Merged</title>
+
+<!-- Bootstrap CSS (CDN) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous">
+
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
 
 <style>
   :root{
     --bg: #ffffff;
-    --accent: #001f3f; /* deep navy blue */
+    --accent: #001f3f;
     --muted: #6b7280;
     --surface: #f8fafc;
     --radius: 8px;
-    --gap: 12px;
   }
-
   html,body{height:100%;}
   body {
-    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
     background: var(--bg);
     color: #0b1220;
     padding: 32px;
-    padding-top: 100px;  /* Increased top padding to account for fixed navbar */
+    padding-top: 100px;
     max-width: 1100px;
     margin: 24px auto;
     -webkit-font-smoothing:antialiased;
   }
-
   h2{ color: var(--accent); font-weight:600; margin:0 0 18px 0; }
+
+  /* Small date control styling */
+  .button-group button {
+    margin: 4px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .button-group button.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .nav-buttons button {
+    margin: 4px;
+    padding: 8px 14px;
+    background: var(--accent);
+    color: white;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-buttons button:hover { opacity: .9; }
 
   form#cashForm{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
   input[type="date"], input[type="text"], input[type="number"], select{
@@ -45,19 +69,8 @@
     border-radius: var(--radius);
     outline: none;
     min-width: 160px;
-    transition: box-shadow .12s, border-color .12s;
   }
-  input:focus, select:focus{ box-shadow: 0 4px 12px rgba(0,31,63,0.06); border-color: var(--accent); }
-
-  button{ cursor:pointer; border-radius: 10px; border: none; padding: 8px 12px; font-weight:600; }
-  button#addEntryBtn{ background: var(--accent); color: white; box-shadow: 0 6px 18px rgba(0,31,63,0.12); }
-  button#applyFilterBtn{
-    background: var(--accent);
-    color: white;
-    border: none;
-    box-shadow: 0 6px 18px rgba(0,31,63,0.12);
-    padding:8px 12px;
-  }
+  button#addEntryBtn{ background: var(--accent); color: white; border-radius:10px; padding:8px 12px; font-weight:600; border:none; }
 
   .summary-container{ display:flex; gap:24px; align-items:flex-start; margin-top:10px; }
   .summary{ background: linear-gradient(180deg, #ffffff 0%, var(--surface) 100%); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(10,20,40,0.04); min-width:240px; }
@@ -71,49 +84,26 @@
   table{ width:100%; border-collapse:collapse; margin-top:18px; background:white; border-radius:8px; overflow:hidden; box-shadow:0 8px 24px rgba(10,20,40,0.04); }
   thead th{ text-align:left; padding:12px 16px; color:var(--muted); font-weight:600; background: linear-gradient(180deg, #ffffff, #fbfdff); }
   tbody td{ padding:12px 16px; border-top:1px solid #f1f5f9; }
-
-  @media (max-width:900px){ .charts-container, .summary-container{ flex-direction:column; } form#cashForm{ gap:8px; } }
 </style>
 </head>
 <body>
 
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #001f3f;">
-      <div class="container-fluid">
-        
-        <a class="navbar-brand" href="upload_html.html" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; cursor: pointer;">
-            JAK
-        </a>
-        
-        <button class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">element1</a>
-            </li>
-            
-            <li class="nav-item">
-              <a class="nav-link" href="#">element2</a>
-            </li>
-            
-            <li class="nav-item">
-              <a class="nav-link" href="#">element3</a>
-            </li>
-            
-          </ul>
-        </div>
-      </div>
-    </nav>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #001f3f;">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="upload_html.html" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px;">JAK</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link active" href="#">element1</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">element2</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">element3</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <h2>Cash Flow Analysis</h2>
 
@@ -128,6 +118,30 @@
   <button type="submit" id="addEntryBtn">Add</button>
 </form>
 
+<!-- DATE RANGE CONTROLS (merged) -->
+<div style="margin-top:6px;">
+  <div class="d-flex align-items-center flex-wrap">
+    <div class="button-group me-3" role="tablist" aria-label="Range presets">
+      <button id="dayBtn" type="button" aria-pressed="true">Day</button>
+      <button id="weekBtn" type="button">Week</button>
+      <button id="monthBtn" type="button">Month</button>
+      <button id="yearBtn" type="button">Year</button>
+    </div>
+
+    <div class="nav-buttons me-3">
+      <button id="prevBtn" type="button">Previous</button>
+      <button id="nextBtn" type="button">Next</button>
+    </div>
+
+    <div class="d-flex align-items-center" style="gap:8px;">
+      <label class="mb-0">Start: <input type="date" id="startDate"></label>
+      <label class="mb-0">End: <input type="date" id="endDate"></label>
+      <button id="applyFilterBtn" type="button" class="btn" style="background:var(--accent); color:#fff; border-radius:8px; padding:8px 12px;">Apply Filter</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY + CHARTS -->
 <div class="summary-container">
   <div class="summary">
     <p>Total Income: $<span id="totalIncome">0</span></p>
@@ -148,12 +162,7 @@
   </div>
 </div>
 
-<div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
-  <label>Start: <input type="date" id="startDate"></label>
-  <label>End: <input type="date" id="endDate"></label>
-  <button id="applyFilterBtn" type="button">Apply Filter</button>
-</div>
-
+<!-- TABLE -->
 <table>
   <thead>
     <tr><th>Date</th><th>Description</th><th>Amount</th><th>Type</th></tr>
@@ -161,38 +170,70 @@
   <tbody id="entryTable"></tbody>
 </table>
 
+<!-- SCRIPT: merged, complete logic -->
 <script>
+/* -------------------------
+   Data & UI element binding
+   ------------------------- */
 const form = document.getElementById('cashForm');
-let entries = [];
-let descriptionMap = {};
+let entries = [];                     // in-memory entries (demo)
+let descriptionMap = {};              // autofill map
 
+// form inputs
 const dateInput = document.getElementById('date');
 const descInput = document.getElementById('desc');
 const amountInput = document.getElementById('amount');
 const typeSelect = document.getElementById('type');
-dateInput.value = new Date().toISOString().split('T')[0];
 
-// Charts
+// filter and controls
+const startDateInput = document.getElementById('startDate');
+const endDateInput   = document.getElementById('endDate');
+const applyFilterBtn = document.getElementById('applyFilterBtn');
+
+// range buttons
+const dayBtn = document.getElementById('dayBtn');
+const weekBtn = document.getElementById('weekBtn');
+const monthBtn = document.getElementById('monthBtn');
+const yearBtn = document.getElementById('yearBtn');
+const intervalButtons = [dayBtn, weekBtn, monthBtn, yearBtn];
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+let selectedInterval = 'day'; // default
+
+// initialize date inputs to today
+const todayISO = new Date().toISOString().split('T')[0];
+dateInput.value = todayISO;
+startDateInput.value = todayISO;
+endDateInput.value = todayISO;
+
+/* -------------------------
+   Charts setup (Chart.js)
+   ------------------------- */
 const cashFlowCtx = document.getElementById('cashFlowPie').getContext('2d');
-const netFlowCtx = document.getElementById('netFlowChart').getContext('2d');
+const netFlowCtx  = document.getElementById('netFlowChart').getContext('2d');
 
 const cashFlowChart = new Chart(cashFlowCtx, {
   type: 'pie',
   data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
-  options: { responsive: true }
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
 });
 
 const netFlowChart = new Chart(netFlowCtx, {
   type: 'line',
-  data: { labels: [], datasets: [{ label: 'Net Cash Flow', data: [], borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.1)', fill: true, tension: 0.2 }] },
-  options: { responsive: true }
+  data: { labels: [], datasets: [{ label: 'Net Cash Flow', data: [], borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.08)', fill: true, tension: 0.2 }] },
+  options: { responsive: true, interaction: { mode: 'index' }, plugins: { legend: { display: false } } }
 });
 
-// Color generators
+/* -------------------------
+   Helper color functions
+   ------------------------- */
 function getGreenShade() { return `hsl(${Math.floor(Math.random()*30)+100}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
-function getRedShade() { return `hsl(${Math.floor(Math.random()*20)+0}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
+function getRedShade()   { return `hsl(${Math.floor(Math.random()*20)+0}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
 
-// Autofill
+/* -------------------------
+   Autofill description -> amount/type
+   ------------------------- */
 descInput.addEventListener('input', () => {
   const desc = descInput.value.trim();
   if (descriptionMap[desc]) {
@@ -201,130 +242,41 @@ descInput.addEventListener('input', () => {
   }
 });
 
-// Filter elements
-const startDate = document.getElementById('startDate');
-const endDate = document.getElementById('endDate');
-const applyFilterBtn = document.getElementById('applyFilterBtn'); // may be null after removing buttons
-const prevRangeBtn = document.getElementById('prevRangeBtn');
-const nextRangeBtn = document.getElementById('nextRangeBtn');
-const presetButtons = document.querySelectorAll('.preset-buttons button[data-range]');
+/* -------------------------
+   CRUD & persistence stubs
+   ------------------------- */
+const USER = "demoUser";
 
-// Apply preset
-function setActivePreset(range){
-  presetButtons.forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`.preset-buttons button[data-range='${range}']`);
-  if(btn) btn.classList.add('active');
-}
-
-function applyPreset(range) {
-  const today = new Date();
-  let start, end;
-  switch(range){
-    case 'day':
-      start = end = today;
-      break;
-    case 'week':
-      const dayOfWeek = today.getDay();
-      start = new Date(today); start.setDate(today.getDate() - dayOfWeek);
-      end = new Date(start); end.setDate(start.getDate() + 6);
-      break;
-    case 'month':
-      start = new Date(today.getFullYear(), today.getMonth(), 1);
-      end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      break;
-    case 'year':
-      start = new Date(today.getFullYear(), 0, 1);
-      end = new Date(today.getFullYear(), 11, 31);
-      break;
-  }
-  startDate.value = start.toISOString().split('T')[0];
-  endDate.value = end.toISOString().split('T')[0];
-  setActivePreset(range);
+/* Simulated load (replace with real API calls if you have them) */
+window.addEventListener('DOMContentLoaded', ()=> {
+  // Example: prefill with a couple demo entries so charts show something initially
+  entries = [
+    { date: todayISO, description: 'Salary', amount: 2000, type: 'income' },
+    { date: todayISO, description: 'Coffee', amount: 3.50, type: 'expense' }
+  ];
+  descriptionMap['Salary'] = { amount: 2000, type: 'income' };
+  descriptionMap['Coffee'] = { amount: 3.5, type: 'expense' };
   applyFilter();
-}
-
-if(presetButtons && presetButtons.length){
-  presetButtons.forEach(btn => {
-    btn.addEventListener('click', () => applyPreset(btn.dataset.range));
-  });
-}
-
-// Current range type
-function getCurrentRangeType(){
-  const start = new Date(startDate.value);
-  const end = new Date(endDate.value);
-  const diffDays = (end - start)/(1000*60*60*24) + 1;
-  if(diffDays === 1) return 'day';
-  if(diffDays <= 7) return 'week';
-  if(diffDays > 27 && diffDays < 365) return 'month';
-  if(diffDays >= 365) return 'year';
-  return 'day';
-}
-
-// Shift range
-function shiftRange(direction){
-  const rangeType = getCurrentRangeType();
-  let start = new Date(startDate.value);
-  let end = new Date(endDate.value);
-  let newStart, newEnd;
-
-  switch(rangeType){
-    case 'day':
-      newStart = new Date(start); newStart.setDate(start.getDate() + direction);
-      newEnd = new Date(end); newEnd.setDate(end.getDate() + direction);
-      break;
-    case 'week':
-      newStart = new Date(start); newStart.setDate(start.getDate() + 7*direction);
-      newEnd = new Date(end); newEnd.setDate(end.getDate() + 7*direction);
-      break;
-    case 'month':
-      newStart = new Date(start.getFullYear(), start.getMonth() + direction, 1);
-      newEnd = new Date(newStart.getFullYear(), newStart.getMonth() + 1, 0);
-      break;
-    case 'year':
-      newStart = new Date(start.getFullYear() + direction, 0, 1);
-      newEnd = new Date(start.getFullYear() + direction, 11, 31);
-      break;
-  }
-
-  startDate.value = newStart.toISOString().split('T')[0];
-  endDate.value = newEnd.toISOString().split('T')[0];
-  applyFilter();
-  setActivePreset(rangeType);
-}
-
-if(nextRangeBtn) nextRangeBtn.addEventListener('click', ()=>shiftRange(1));
-if(prevRangeBtn) prevRangeBtn.addEventListener('click', ()=>shiftRange(-1));
-
-// Database logic
-const USER="demoUser";
-window.addEventListener("DOMContentLoaded", async ()=>{
-  try{
-    const res = await fetch(`/api/entries/${USER}`);
-    const savedEntries = await res.json();
-    entries.push(...savedEntries);
-    applyFilter();
-  }catch(err){ console.error(err); }
 });
 
+/* Save to server stub */
 async function saveToDatabase(entry){
-  try{
-    await fetch("/api/entries",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ user:USER, ...entry })
-    });
-  }catch(err){ console.error(err); }
+  // If you have a backend endpoint, post here. For now this is a no-op (catch errors).
+  try {
+    // await fetch("/api/entries", { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({user:USER, ...entry}) });
+  } catch(e) { console.error('DB save error', e); }
 }
 
-// Filter & update
+/* -------------------------
+   Filtering & UI updates
+   ------------------------- */
 function getFilteredEntries() {
-  const start = startDate.value ? new Date(startDate.value) : null;
-  const end = endDate.value ? new Date(endDate.value) : null;
+  const start = startDateInput.value ? new Date(startDateInput.value) : null;
+  const end   = endDateInput.value ? new Date(endDateInput.value) : null;
   return entries.filter(e => {
     const d = new Date(e.date);
-    if(start && d<start) return false;
-    if(end && d>end) return false;
+    if (start && d < start) return false;
+    if (end && d > end) return false;
     return true;
   });
 }
@@ -341,79 +293,214 @@ function updateTable(filteredEntries) {
   const tbody = document.getElementById('entryTable');
   tbody.innerHTML = '';
   filteredEntries.forEach(e => {
-    tbody.innerHTML += `<tr>
-      <td>${e.date}</td>
-      <td>${e.description}</td>
-      <td>${e.amount.toFixed(2)}</td>
-      <td>${e.type}</td>
-    </tr>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${e.date}</td><td>${e.description}</td><td>${e.amount.toFixed(2)}</td><td>${e.type}</td>`;
+    tbody.appendChild(tr);
   });
 }
 
 function updateSummary(filteredEntries) {
   let income=0, expense=0;
-  filteredEntries.forEach(e => e.type==='income'? income+=e.amount : expense+=e.amount);
-  document.getElementById('totalIncome').innerText = income.toFixed(2);
+  filteredEntries.forEach(e => e.type === 'income' ? income += e.amount : expense += e.amount);
+  document.getElementById('totalIncome').innerText   = income.toFixed(2);
   document.getElementById('totalExpenses').innerText = expense.toFixed(2);
-  document.getElementById('netFlow').innerText = (income-expense).toFixed(2);
+  document.getElementById('netFlow').innerText       = (income - expense).toFixed(2);
 }
 
 function updateCashFlowChart(filteredEntries) {
   const dataMap = {};
   const colorMap = {};
-  filteredEntries.forEach(e=>{
-    dataMap[e.description] = (dataMap[e.description]||0)+e.amount;
-    colorMap[e.description] = e.type==='income'?getGreenShade():getRedShade();
+  filteredEntries.forEach(e => {
+    dataMap[e.description] = (dataMap[e.description] || 0) + e.amount;
+    colorMap[e.description] = e.type === 'income' ? getGreenShade() : getRedShade();
   });
-  const labels=Object.keys(dataMap);
-  const data=Object.values(dataMap);
-  const colors=labels.map(l=>colorMap[l]);
-  cashFlowChart.data.labels=labels;
-  cashFlowChart.data.datasets[0].data=data;
-  cashFlowChart.data.datasets[0].backgroundColor=colors;
+  const labels = Object.keys(dataMap);
+  const data   = Object.values(dataMap);
+  const colors = labels.map(l => colorMap[l]);
+  cashFlowChart.data.labels = labels;
+  cashFlowChart.data.datasets[0].data = data;
+  cashFlowChart.data.datasets[0].backgroundColor = colors;
   cashFlowChart.update();
 }
 
-
 function updateNetFlowChart(filteredEntries) {
-  const sorted=[...filteredEntries].sort((a,b)=>new Date(a.date)-new Date(b.date));
-  const labels=[], data=[];
-  let cumulative=0;
-  sorted.forEach(e=>{
-    cumulative += e.type==='income'? e.amount : -e.amount;
+  const sorted = [...filteredEntries].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const labels = [];
+  const data = [];
+  let cumulative = 0;
+  sorted.forEach(e => {
+    cumulative += e.type === 'income' ? e.amount : -e.amount;
     labels.push(e.date);
-    data.push(cumulative);
+    data.push(+cumulative.toFixed(2));
   });
-  netFlowChart.data.labels=labels;
-  netFlowChart.data.datasets[0].data=data;
+  netFlowChart.data.labels = labels;
+  netFlowChart.data.datasets[0].data = data;
   netFlowChart.update();
 }
 
-// Form submit
-form.addEventListener('submit', async function(e){
-  e.preventDefault();
-  const date=dateInput.value;
-  const description=descInput.value.trim();
-  const amount=parseFloat(amountInput.value);
-  const type=typeSelect.value;
-  if(!description || isNaN(amount) || !date || !type){ alert("Please fill all fields correctly"); return; }
-
-  const entry={date, description, amount, type};
+/* -------------------------
+   Form submission (add entry)
+   ------------------------- */
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const date = dateInput.value;
+  const description = descInput.value.trim();
+  const amount = parseFloat(amountInput.value);
+  const type = typeSelect.value;
+  if (!description || isNaN(amount) || !date || !type) {
+    alert('Please fill all fields correctly');
+    return;
+  }
+  const entry = { date, description, amount, type };
   entries.push(entry);
-  descriptionMap[description]={amount,type};
-
+  descriptionMap[description] = { amount, type };
   await saveToDatabase(entry);
   form.reset();
-  dateInput.value=new Date().toISOString().split('T')[0];
+  dateInput.value = todayISO;
   applyFilter();
 });
 
-if(applyFilterBtn) applyFilterBtn.addEventListener('click', applyFilter);
+/* -------------------------
+   Range button logic (Day/Week/Month/Year)
+   ------------------------- */
+function clearActiveInterval() {
+  intervalButtons.forEach(b => b.classList.remove('active'));
+}
+
+function setActiveInterval(id) {
+  clearActiveInterval();
+  const btn = document.getElementById(id + 'Btn');
+  if (btn) btn.classList.add('active');
+}
+
+function formatISO(date) {
+  return date.toISOString().split('T')[0];
+}
+
+/* Set the start & end inputs according to selectedInterval and a given anchor start date */
+function setDateRangeFromStart(anchorStart) {
+  const s = anchorStart ? new Date(anchorStart) : new Date();
+  let e = new Date(s);
+  switch(selectedInterval) {
+    case 'day':
+      // start & end same day
+      break;
+    case 'week':
+      // assume week = 7 days starting from anchorStart
+      e.setDate(e.getDate() + 6);
+      break;
+    case 'month':
+      // month range = from s's day to end of that month
+      e = new Date(s.getFullYear(), s.getMonth() + 1, 0); // last day of month
+      break;
+    case 'year':
+      e = new Date(s.getFullYear(), 11, 31); // end of year
+      s.setMonth(0,1); // start -> start of year
+      break;
+  }
+  startDateInput.value = formatISO(s);
+  endDateInput.value = formatISO(e);
+  applyFilter(); // update UI automatically
+}
+
+/* Handler for preset button clicks (and initial activation) */
+dayBtn.addEventListener('click', ()=> { selectedInterval = 'day'; setActiveInterval('day'); setDateRangeFromStart(startDateInput.value || todayISO); });
+weekBtn.addEventListener('click', ()=> { selectedInterval = 'week'; setActiveInterval('week'); // align week to startDateInput if possible, else to current week's start
+  // compute start of current week (Sunday-based)
+  const now = startDateInput.value ? new Date(startDateInput.value) : new Date();
+  const dayOfWeek = now.getDay();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate() - dayOfWeek);
+  setDateRangeFromStart(formatISO(weekStart));
+});
+monthBtn.addEventListener('click', ()=> { selectedInterval = 'month'; setActiveInterval('month'); 
+  const s = startDateInput.value ? new Date(startDateInput.value) : new Date();
+  const monthStart = new Date(s.getFullYear(), s.getMonth(), 1);
+  setDateRangeFromStart(formatISO(monthStart));
+});
+yearBtn.addEventListener('click', ()=> { selectedInterval = 'year'; setActiveInterval('year'); 
+  const s = startDateInput.value ? new Date(startDateInput.value) : new Date();
+  const yearStart = new Date(s.getFullYear(), 0, 1);
+  setDateRangeFromStart(formatISO(yearStart));
+});
+
+/* -------------------------
+   Previous / Next navigation (jumps by the selected interval)
+   ------------------------- */
+function adjustDateRange(direction) {
+  // direction = +1 (next) or -1 (previous)
+  const start = new Date(startDateInput.value);
+  const end   = new Date(endDateInput.value);
+  let newStart = new Date(start);
+  let newEnd   = new Date(end);
+
+  switch(selectedInterval) {
+    case 'day':
+      newStart.setDate(newStart.getDate() + direction);
+      newEnd.setDate(newEnd.getDate() + direction);
+      break;
+    case 'week':
+      newStart.setDate(newStart.getDate() + 7 * direction);
+      newEnd.setDate(newEnd.getDate() + 7 * direction);
+      break;
+    case 'month':
+      // move by whole months: start to first of next month of the moved start,
+      // then compute end as last day of that month for consistent behavior
+      newStart = new Date(start.getFullYear(), start.getMonth() + direction, 1);
+      newEnd   = new Date(newStart.getFullYear(), newStart.getMonth() + 1, 0);
+      break;
+    case 'year':
+      newStart = new Date(start.getFullYear() + direction, 0, 1);
+      newEnd   = new Date(start.getFullYear() + direction, 11, 31);
+      break;
+  }
+
+  startDateInput.value = formatISO(newStart);
+  endDateInput.value = formatISO(newEnd);
+  applyFilter();
+}
+
+prevBtn.addEventListener('click', ()=> adjustDateRange(-1));
+nextBtn.addEventListener('click', ()=> adjustDateRange(1));
+
+/* If user edits start/end manually and clicks Apply: mark interval according to range length */
+function getCurrentRangeType(){
+  const s = new Date(startDateInput.value);
+  const e = new Date(endDateInput.value);
+  const diffDays = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+  if (diffDays === 1) return 'day';
+  if (diffDays <= 7) return 'week';
+  // approximate month if within 28-31 days (not foolproof)
+  if (diffDays >= 28 && diffDays <= 31) return 'month';
+  if (diffDays >= 365) return 'year';
+  return selectedInterval; // fallback to current
+}
+
+applyFilterBtn.addEventListener('click', ()=>{
+  // update selectedInterval (UI) from the manual start/end if it matches a preset
+  const type = getCurrentRangeType();
+  selectedInterval = type;
+  setActiveInterval(type);
+  applyFilter();
+});
+
+/* If user types a start date manually, update end date automatically to match selected interval */
+startDateInput.addEventListener('change', ()=> {
+  setDateRangeFromStart(startDateInput.value || todayISO);
+});
+
+/* Similarly, if they change selected interval, set date range based on current start date */
+function initializeDefault() {
+  // make sure selected interval UI matches variable and set dates properly
+  setActiveInterval(selectedInterval);
+  setDateRangeFromStart(startDateInput.value || todayISO);
+}
+initializeDefault();
+
 </script>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+<!-- Bootstrap JS bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 </body>
 </html>
