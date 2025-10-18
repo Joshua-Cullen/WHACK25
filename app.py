@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template("upload_html.html")
+    return render_template("game_html.html")
 
 @app.route("/submit", methods=["POST"])
 def submit():
