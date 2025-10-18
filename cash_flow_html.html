@@ -443,10 +443,8 @@ function adjustDateRange(direction) {
       newEnd.setDate(newEnd.getDate() + 7 * direction);
       break;
     case 'month':
-      // move by whole months: start to first of next month of the moved start,
-      // then compute end as last day of that month for consistent behavior
-      newStart = new Date(start.getFullYear(), start.getMonth() + direction, 1);
-      newEnd   = new Date(newStart.getFullYear(), newStart.getMonth() + 1, 0);
+      newStart.setMonth(newStart.getMonth() + direction);
+      newEnd.setMonth(newEnd.getMonth()  + direction);
       break;
     case 'year':
       newStart = new Date(start.getFullYear() + direction, 0, 1);
