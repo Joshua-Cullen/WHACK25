@@ -14,7 +14,11 @@
   canvas { max-width: 100%; height: auto; }
   .charts-container { display: flex; gap: 40px; align-items: flex-start; margin-top: 30px; flex-wrap: wrap; }
   .summary-container { display: flex; align-items: flex-start; gap: 40px; margin-top: 20px; }
-  @media (max-width: 900px) { .charts-container { flex-direction: column; } .summary-container { flex-direction: column; } }
+  @media (max-width: 900px) { .charts-container, .summary-container { flex-direction: column; } }
+  .preset-buttons { margin-top: 10px; }
+  .preset-buttons button { margin-right:5px; margin-top:5px; }
+  .preset-buttons button.active { background-color: #007BFF; color: white; }
+  .prev-next-row { margin-top: 5px; }
 </style>
 </head>
 <body>
@@ -40,13 +44,11 @@
   </div>
 
   <div class="charts-container">
-    <!-- Net Cash Flow Line Chart -->
     <div class="chart-box" style="flex:1; min-width:300px;">
       <h3>Historical Net Cash Flow</h3>
       <canvas id="netFlowChart"></canvas>
     </div>
 
-    <!-- Pie Chart on the Right -->
     <div class="chart-box" style="flex:1; min-width:300px;">
       <h3>Cash Flow by Category</h3>
       <canvas id="cashFlowPie"></canvas>
@@ -54,9 +56,22 @@
   </div>
 </div>
 
-<div style="margin-top:20px;">
-  <label>View from: <input type="date" id="startDate"></label>
-  <label>to: <input type="date" id="endDate"></label>
+<div class="preset-buttons">
+  <strong>Presets:</strong>
+  <button data-range="day">Day</button>
+  <button data-range="week">Week</button>
+  <button data-range="month">Month</button>
+  <button data-range="year">Year</button>
+</div>
+
+<div class="prev-next-row">
+  <button id="prevRangeBtn">Previous</button>
+  <button id="nextRangeBtn">Next</button>
+</div>
+
+<div style="margin-top:10px;">
+  <label>Start: <input type="date" id="startDate"></label>
+  <label>End: <input type="date" id="endDate"></label>
   <button id="applyFilterBtn">Apply Filter</button>
 </div>
 
@@ -76,8 +91,6 @@ const dateInput = document.getElementById('date');
 const descInput = document.getElementById('desc');
 const amountInput = document.getElementById('amount');
 const typeSelect = document.getElementById('type');
-
-// Default date today
 dateInput.value = new Date().toISOString().split('T')[0];
 
 // Charts
@@ -100,7 +113,7 @@ const netFlowChart = new Chart(netFlowCtx, {
 function getGreenShade() { return `hsl(${Math.floor(Math.random()*30)+100}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
 function getRedShade() { return `hsl(${Math.floor(Math.random()*20)+0}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
 
-// Autofill description
+// Autofill
 descInput.addEventListener('input', () => {
   const desc = descInput.value.trim();
   if (descriptionMap[desc]) {
@@ -113,7 +126,117 @@ descInput.addEventListener('input', () => {
 const startDate = document.getElementById('startDate');
 const endDate = document.getElementById('endDate');
 const applyFilterBtn = document.getElementById('applyFilterBtn');
+const prevRangeBtn = document.getElementById('prevRangeBtn');
+const nextRangeBtn = document.getElementById('nextRangeBtn');
+const presetButtons = document.querySelectorAll('.preset-buttons button[data-range]');
 
+// Apply preset
+function setActivePreset(range){
+  presetButtons.forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.preset-buttons button[data-range='${range}']`);
+  if(btn) btn.classList.add('active');
+}
+
+function applyPreset(range) {
+  const today = new Date();
+  let start, end;
+  switch(range){
+    case 'day':
+      start = end = today;
+      break;
+    case 'week':
+      const dayOfWeek = today.getDay();
+      start = new Date(today); start.setDate(today.getDate() - dayOfWeek);
+      end = new Date(start); end.setDate(start.getDate() + 6);
+      break;
+    case 'month':
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      break;
+    case 'year':
+      start = new Date(today.getFullYear(), 0, 1);
+      end = new Date(today.getFullYear(), 11, 31);
+      break;
+  }
+  startDate.value = start.toISOString().split('T')[0];
+  endDate.value = end.toISOString().split('T')[0];
+  setActivePreset(range);
+  applyFilter();
+}
+
+presetButtons.forEach(btn => {
+  btn.addEventListener('click', () => applyPreset(btn.dataset.range));
+});
+
+// Current range type
+function getCurrentRangeType(){
+  const start = new Date(startDate.value);
+  const end = new Date(endDate.value);
+  const diffDays = (end - start)/(1000*60*60*24) + 1;
+  if(diffDays === 1) return 'day';
+  if(diffDays <= 7) return 'week';
+  if(diffDays > 27 && diffDays < 365) return 'month';
+  if(diffDays >= 365) return 'year';
+  return 'day';
+}
+
+// Shift range
+function shiftRange(direction){
+  const rangeType = getCurrentRangeType();
+  let start = new Date(startDate.value);
+  let end = new Date(endDate.value);
+  let newStart, newEnd;
+
+  switch(rangeType){
+    case 'day':
+      newStart = new Date(start); newStart.setDate(start.getDate() + direction);
+      newEnd = new Date(end); newEnd.setDate(end.getDate() + direction);
+      break;
+    case 'week':
+      newStart = new Date(start); newStart.setDate(start.getDate() + 7*direction);
+      newEnd = new Date(end); newEnd.setDate(end.getDate() + 7*direction);
+      break;
+    case 'month':
+      newStart = new Date(start.getFullYear(), start.getMonth() + direction, 1);
+      newEnd = new Date(newStart.getFullYear(), newStart.getMonth() + 1, 0);
+      break;
+    case 'year':
+      newStart = new Date(start.getFullYear() + direction, 0, 1);
+      newEnd = new Date(start.getFullYear() + direction, 11, 31);
+      break;
+  }
+
+  startDate.value = newStart.toISOString().split('T')[0];
+  endDate.value = newEnd.toISOString().split('T')[0];
+  applyFilter();
+  setActivePreset(rangeType);
+}
+
+nextRangeBtn.addEventListener('click', ()=>shiftRange(1));
+prevRangeBtn.addEventListener('click', ()=>shiftRange(-1));
+
+// Database logic
+const USER="demoUser";
+window.addEventListener("DOMContentLoaded", async ()=>{
+  try{
+    const res = await fetch(`/api/entries/${USER}`);
+    const savedEntries = await res.json();
+    entries.push(...savedEntries);
+    applyFilter();
+  }catch(err){ console.error(err); }
+});
+
+async function saveToDatabase(entry){
+  try{
+    await fetch("/api/entries",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ user:USER, ...entry })
+    });
+  }catch(err){ console.error(err); }
+}
+
+// Filter & update
 function getFilteredEntries() {
   const start = startDate.value ? new Date(startDate.value) : null;
   const end = endDate.value ? new Date(endDate.value) : null;
@@ -123,6 +246,14 @@ function getFilteredEntries() {
     if(end && d>end) return false;
     return true;
   });
+}
+
+function applyFilter() {
+  const filtered = getFilteredEntries();
+  updateTable(filtered);
+  updateSummary(filtered);
+  updateCashFlowChart(filtered);
+  updateNetFlowChart(filtered);
 }
 
 function updateTable(filteredEntries) {
@@ -176,38 +307,7 @@ function updateNetFlowChart(filteredEntries) {
   netFlowChart.update();
 }
 
-// DB integration
-const USER="demoUser";
-
-window.addEventListener("DOMContentLoaded", async ()=>{
-  try{
-    const res = await fetch(`/api/entries/${USER}`);
-    const savedEntries = await res.json();
-    entries.push(...savedEntries);
-    applyFilter();
-  }catch(err){ console.error(err); }
-});
-
-async function saveToDatabase(entry){
-  try{
-    await fetch("/api/entries",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ user:USER, ...entry })
-    });
-  }catch(err){ console.error(err); }
-}
-
-function applyFilter() {
-  const filtered = getFilteredEntries();
-  updateTable(filtered);
-  updateSummary(filtered);
-  updateCashFlowChart(filtered);
-  updateNetFlowChart(filtered);
-}
-
-applyFilterBtn.addEventListener('click', applyFilter);
-
+// Form submit
 form.addEventListener('submit', async function(e){
   e.preventDefault();
   const date=dateInput.value;
@@ -225,6 +325,8 @@ form.addEventListener('submit', async function(e){
   dateInput.value=new Date().toISOString().split('T')[0];
   applyFilter();
 });
+
+applyFilterBtn.addEventListener('click', applyFilter);
 </script>
 </body>
 </html>
