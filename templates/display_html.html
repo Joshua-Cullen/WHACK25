@@ -12,7 +12,7 @@
           crossorigin="anonymous">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" type="text/css" href="style_pdf_analyser.css">
+    <link rel="stylesheet" type="text/css" href="display_css.css">
 </head>
 <body>
 
@@ -20,7 +20,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #001f3f;">
       <div class="container-fluid">
         
-        <a class="navbar-brand" href="#" onclick="showUpload(); return false;" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; cursor: pointer;">
+        <a class="navbar-brand" href="upload_html.html" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; cursor: pointer;">
             JAK
         </a>
         
@@ -53,38 +53,6 @@
         </div>
       </div>
     </nav>
-
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loader"></div>
-        <div class="loading-text">Processing...</div>
-    </div>
-
-    <!-- Upload Section -->
-    <div id="uploadSection" class="upload-section">
-        <div class="content-wrapper">
-            <div class="upload-container">
-                <h1>Upload File</h1>
-                <p class="subtitle">Select or drag a file to upload</p>
-                
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-text">Click to browse or drag file here</div>
-                    <div class="upload-hint">Supports any file type</div>
-                </div>
-                
-                <input type="file" id="fileInput">
-                
-                <div class="file-info" id="fileInfo">
-                    <button class="remove-file-btn" id="removeFileBtn">×</button>
-                    <div class="file-name" id="fileName"></div>
-                    <div class="file-size" id="fileSize"></div>
-                </div>
-                
-                <button class="upload-btn" id="uploadBtn" disabled>Upload</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Display Section -->
     <div id="displaySection" class="display-section">
@@ -122,6 +90,6 @@
             crossorigin="anonymous"></script>
     
     <!-- Custom JavaScript -->
-    <script type="text/javascript" src="script_pdf_analyser.js"></script>
+    <script type="text/javascript" src="display_js.js"></script>
 </body>
 </html>

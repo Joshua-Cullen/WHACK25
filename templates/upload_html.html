@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload File</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+          crossorigin="anonymous">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="upload_css.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #001f3f;">
+      <div class="container-fluid">
+        
+        <a class="navbar-brand" href="#" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; cursor: pointer;">
+            JAK
+        </a>
+        
+        <button class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" 
+                aria-expanded="false" 
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">element1</a>
+            </li>
+            
+            <li class="nav-item">
+              <a class="nav-link" href="#">element2</a>
+            </li>
+            
+            <li class="nav-item">
+              <a class="nav-link" href="#">element3</a>
+            </li>
+            
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+        <div class="loading-text">Processing...</div>
+    </div>
+
+    <!-- Upload Section -->
+    <div id="uploadSection" class="upload-section">
+        <div class="content-wrapper">
+            <div class="upload-container">
+                <h1>Upload File</h1>
+                <p class="subtitle">Select or drag a file to upload</p>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Click to browse or drag file here</div>
+                    <div class="upload-hint">Supports any file type</div>
+                </div>
+                
+                <input type="file" id="fileInput">
+                
+                <div class="file-info" id="fileInfo">
+                    <button class="remove-file-btn" id="removeFileBtn">×</button>
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+                
+                <button class="upload-btn" id="uploadBtn" disabled>Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+            crossorigin="anonymous"></script>
+    
+    <!-- Custom JavaScript -->
+    <script type="text/javascript" src="upload_js.js"></script>
+</body>
+</html>

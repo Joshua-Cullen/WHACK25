@@ -5,10 +5,7 @@ const fileInfo = document.getElementById('fileInfo');
 const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
 const uploadBtn = document.getElementById('uploadBtn');
-const uploadSection = document.getElementById('uploadSection');
-const displaySection = document.getElementById('displaySection');
 const removeFileBtn = document.getElementById('removeFileBtn');
-const backBtn = document.getElementById('backBtn');
 const loadingScreen = document.getElementById('loadingScreen');
 
 // Store selected file
@@ -71,22 +68,11 @@ uploadBtn.addEventListener('click', () => {
         // Simulate processing time (1.5 seconds)
         setTimeout(() => {
             loadingScreen.classList.remove('active');
-            showDisplay();
+            // Redirect to display page
+            window.location.href = 'display_html.html';
         }, 1500);
     }
 });
-
-// Show display section
-function showDisplay() {
-    uploadSection.style.display = 'none';
-    displaySection.classList.add('active');
-}
-
-// Show upload section
-function showUpload() {
-    displaySection.classList.remove('active');
-    uploadSection.style.display = 'block';
-}
 
 // Remove file
 function removeFile() {
@@ -100,4 +86,3 @@ function removeFile() {
 
 // Event listeners for buttons
 removeFileBtn.addEventListener('click', removeFile);
-backBtn.addEventListener('click', showUpload);
