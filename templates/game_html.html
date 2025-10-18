@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: white;
+            font-family: 'Arial', sans-serif;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: black;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        canvas {
+            aspect-ratio: 1;
+            border: 4px solid white;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: block;
+        }
+
+        .info-panel {
+            background: #001f3f;
+            /*backdrop-filter: blur(10px);*/
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            min-width: 200px;
+            color: white;
+        }
+
+        .score-display {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            color: black;
+        }
+
+        .score-label {
+            font-size: 0.8em;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .high-score {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            color: black;
+            border-radius: 8px;
+        }
+
+        .high-score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fbbf24;
+        }
+
+        .controls {
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .controls p {
+            margin-bottom: 8px;
+        }
+
+        .button-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.4);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(248, 113, 113, 0.4);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 3px solid #f87171;
+            z-index: 1000;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        .credit-info {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 3px solid red;
+            z-index: 1000;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .game-over.show {
+            display: block;
+        }
+
+        .credit-info.show {
+            display: block;
+        }
+
+        .game-over h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #f87171;
+        }
+
+        .game-over p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: #fbbf24;
+        }
+
+        .game-over button {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .game-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+
+        .creditInfoDetail {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div style="display:none;">
+        <img id="carLoans" src="{{ url_for('static', filename='icons/carLoans.png') }}">
+        <img id="debtPayoff" src="{{ url_for('static', filename='icons/debtPayoff.png') }}">
+        <img id="default" src="{{ url_for('static', filename='icons/default.png') }}">
+        <img id="highCreditUtilisation" src="{{ url_for('static', filename='icons/highCreditUtilisation.png') }}">
+        <img id="lowCreditUtilisation" src="{{ url_for('static', filename='icons/lowCreditUtilisation.png') }}">
+        <img id="missedPayment" src="{{ url_for('static', filename='icons/missedPayment.png') }}">
+        <img id="newCredit" src="{{ url_for('static', filename='icons/newCredit.png') }}">
+        <img id="onTimePayment" src="{{ url_for('static', filename='icons/onTimePayment.png') }}">
+    </div>
+
+    <div class="container">
+        <h1>SNAKE GAME</h1>
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div class="info-panel">
+                <div class="score-display">
+                    <div class="score-label">Score</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                <div class="high-score">
+                    <div class="score-label">High Score</div>
+                    <div class="high-score-value" id="highScore">0</div>
+                </div>
+                <div class="controls">
+                    <p><strong>Controls:</strong></p>
+                    <p>Arrow Keys or WASD</p>
+                    <p>Space to Pause/Resume</p>
+                </div>
+                <div class="button-group">
+                    <button class="start-btn" id="startBtn">Start Game</button>
+                    <button class="reset-btn" id="resetBtn">Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-over" id="gameOverModal">
+        <h2>Game Over!</h2>
+        <p id="finalScore">Score: 0</p>
+        <button class="start-btn" onclick="location.reload()">Play Again</button>
+    </div>
+
+    <div class="credit-info" id="creditInfoModal">
+        <h2 id="creditInfoTitle"></h2>
+        <br>
+        <p id="creditInfoDetail"></p>
+        <br>
+        <button class="start-btn" onclick="resume()">Continue</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const creditInfoModal = document.getElementById("creditInfoModal");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [{x: 10, y: 10}];
+        let food = [];
+        let goodfoodTypes = ["onTimePayment", "lowCreditUtilisation", "carLoans", "debtPayoff"];
+        let badfoodTypes = ["missedPayment", "highCreditUtilisation", "default", "newCredit"];
+        let discoveredFood = [];
+        let goodFood = 0;
+        let badFood = 0;
+        let foodCap = 5;
+        let direction = {x: 1, y: 0};
+        let nextDirection = {x: 1, y: 0};
+        let score = 0;
+        let highScore = localStorage ? parseInt(localStorage.getItem('snakeHighScore') || '0') : 0;
+        let gameRunning = false;
+        let gamePaused = false;
+        let gameLoop;
+
+        highScoreEl.textContent = highScore;
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }   
+
+        function generateFood() {
+            let newFoodType;
+            if (goodFood != foodCap && badFood != foodCap) {
+                let randomVar = Math.random();
+                if (randomVar < 0.5) {
+                    //choose bad food 
+                    newFoodType = badfoodTypes[getRandomInt(badfoodTypes.length)]
+                    badFood++;
+                } else {
+                    //choose good food 
+                    newFoodType = goodfoodTypes[getRandomInt(goodfoodTypes.length)]
+                    goodFood++;
+                }
+            } else if (goodFood != foodCap) {
+                //choose good food 
+                newFoodType = goodfoodTypes[getRandomInt(goodfoodTypes.length)]
+                goodFood++;
+            } else if (badFood != foodCap) {
+                //choose bad food
+                newFoodType = badfoodTypes[getRandomInt(badfoodTypes.length)]
+                badFood++;
+            } else {
+                return;
+            }
+
+            let newFood = {
+                x: Math.floor(Math.random() * tileCount),
+                y: Math.floor(Math.random() * tileCount),
+                foodType: newFoodType
+            };
+            for (let segment of snake) {
+                if (segment.x === newFood.x && segment.y === newFood.y) {
+                    generateFood();
+                    break;
+                }
+            }
+            for (let foodItem of food) {
+                if (foodItem.x === newFood.x && foodItem.y === newFood.y) {
+                    generateFood();
+                    break;
+                }
+            }
+            food.push(newFood);
+        }
+
+        function update() {
+            if (gamePaused) return;
+
+            direction = nextDirection;
+            const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
+
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                endGame();
+                return;
+            }
+
+            for (let segment of snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    endGame();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Debug logging for collision detection
+            console.log('Snake head position:', head);
+            console.log('Current food items:', food);
+
+            for (let foodItem of food) {
+                if (head.x === foodItem.x && head.y === foodItem.y) {
+                    if (foodItem.foodType == "carLoans") {
+                        score += 10;
+                        goodFood--;
+
+                        if (!discoveredFood.includes("carLoans")) {
+                            discoveredFood.push("carLoans");
+                            document.getElementById("creditInfoTitle").textContent = "Car Loans";
+                            document.getElementById("creditInfoDetail").textContent = "Taking out a car loan and making timely payments can positively impact your credit score by demonstrating responsible credit behavior.";
+                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+                    if (foodItem.foodType == "lowCreditUtilisation") {
+                        score += 15
+                        goodFood--;
+
+                        if (!discoveredFood.includes("lowCreditUtilisation")) {
+                            discoveredFood.push("lowCreditUtilisation");
+                            document.getElementById("creditInfoTitle").textContent = "Low Credit Utilization";
+                            document.getElementById("creditInfoDetail").textContent = "Maintaining a low credit utilization ratio (the amount of credit you're using compared to your total available credit) can boost your credit score.";
+                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+                    if (foodItem.foodType == "onTimePayment") {
+                        score += 20
+                        goodFood--;
+
+                        if (!discoveredFood.includes("onTimePayment")) {
+                            discoveredFood.push("onTimePayment");
+                            document.getElementById("creditInfoTitle").textContent = "On-Time Payments";
+                            document.getElementById("creditInfoDetail").textContent = "Making payments on time is one of the most important factors in maintaining a good credit score. It shows lenders that you are reliable and responsible.";
+                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+                    if (foodItem.foodType == "debtPayoff") {
+                        score += 25
+                        goodFood--;
+
+                        if (!discoveredFood.includes("debtPayoff")) {
+                            discoveredFood.push("debtPayoff");
+                            document.getElementById("creditInfoTitle").textContent = "Debt Payoff";
+                            document.getElementById("creditInfoDetail").textContent = "Paying off existing debt can improve your credit score by reducing your overall debt burden and improving your credit utilization ratio.";
+                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+                    if (foodItem.foodType == "missedPayment") {
+                        score += -30
+                        badFood--;
+
+                        if (!discoveredFood.includes("missedPayment")) {
+                            discoveredFood.push("missedPayment");
+                            document.getElementById("creditInfoTitle").textContent = "Missed Payment";
+                            document.getElementById("creditInfoDetail").textContent = "Missing a payment can significantly harm your credit score, as it indicates to lenders that you may be unreliable in repaying debts.";
+                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+                    if (foodItem.foodType == "highCreditUtilisation") {
+                        score += -25
+                        badFood--;
+
+                        if (!discoveredFood.includes("highCreditUtilisation")) {
+                            discoveredFood.push("highCreditUtilisation");
+                            document.getElementById("creditInfoTitle").textContent = "High Credit Utilization";
+                            document.getElementById("creditInfoDetail").textContent = "Having a high credit utilization ratio can negatively impact your credit score, as it suggests that you may be over-reliant on credit and could be at risk of defaulting on payments.";
+                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }  
+                    }
+                    if (foodItem.foodType == "default") {
+                        score += -50
+                        badFood--;
+
+                        if (!discoveredFood.includes("default")) {
+                            discoveredFood.push("default");
+                            document.getElementById("creditInfoTitle").textContent = "Loan Default";
+                            document.getElementById("creditInfoDetail").textContent = "Defaulting on a loan can severely damage your credit score, as it indicates to lenders that you are unable to meet your debt obligations.";
+                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+                    if (foodItem.foodType == "newCredit") {
+                        score += -10
+                        badFood--;
+
+                        if (!discoveredFood.includes("newCredit")) {
+                            discoveredFood.push("newCredit");
+                            document.getElementById("creditInfoTitle").textContent = "New Credit Inquiries";
+                            document.getElementById("creditInfoDetail").textContent = "Applying for new credit can result in hard inquiries on your credit report, which may temporarily lower your credit score.";
+                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            creditInfoModal.classList.add("show");
+                            gamePaused = !gamePaused;
+                        }
+                    }
+
+                    scoreEl.textContent = score;
+                    food.splice(food.indexOf(foodItem), 1);
+                    return;
+                }
+            }
+            snake.pop();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.shadowColor = 'rgba(251, 191, 36, 0.6)';
+            ctx.shadowBlur = 10;
+            let image;
+            console.log(food);
+            for (let foodItem of food) {
+                if (foodItem.foodType == "carLoan") {
+                    image = document.getElementById("carLoans");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "lowCreditUtilisation") {
+                    image = document.getElementById("lowCreditUtilisation");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "onTimePayment") {
+                    image = document.getElementById("onTimePayment");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "debtPayoff") {
+                    image = document.getElementById("debtPayoff");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "missedPayment") {
+                    image = document.getElementById("missedPayment");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "highCreditUtilisation") {
+                    image = document.getElementById("highCreditUtilisation");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "default") {
+                    image = document.getElementById("default");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                if (foodItem.foodType == "newCredit") {
+                    image = document.getElementById("newCredit");
+                    ctx.drawImage(image, foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4);
+                }
+                //ctx.fillRect(foodItem.x * gridSize + 2, foodItem.y * gridSize + 2, gridSize - 4, gridSize - 4)
+            }
+            
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#4ade80';
+            ctx.shadowColor = 'rgba(74, 222, 128, 0.4)';
+            ctx.shadowBlur = 10;
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                const opacity = 1 - (i / snake.length) * 0.3;
+                ctx.globalAlpha = opacity;
+                ctx.fillRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2);
+            }
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2;
+            for (let segment of snake) {
+                ctx.strokeRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2);
+            }
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            gameRunning = true;
+            gamePaused = false;
+            clearInterval(gameLoop);
+            gameLoop = setInterval(() => {
+                update();
+                draw();
+            }, 150);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            gamePaused = false;
+            clearInterval(gameLoop);
+            
+            if (score > highScore) {
+                highScore = score;
+                highScoreEl.textContent = highScore;
+                if (localStorage) localStorage.setItem('snakeHighScore', highScore);
+            }
+
+            document.getElementById('finalScore').textContent = `Score: ${score}`;
+            gameOverModal.classList.add('show');
+        }
+
+        function resetGame() {
+            snake = [{x: 10, y: 10}];
+            direction = {x: 1, y: 0};
+            nextDirection = {x: 1, y: 0};
+            score = 0;
+            gameRunning = false;
+            gamePaused = false;
+            scoreEl.textContent = score;
+            startBtn.textContent = 'Start Game';
+            clearInterval(gameLoop);
+            generateFood();
+            draw();
+            gameOverModal.classList.remove('show');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (gameRunning) {
+                    gamePaused = !gamePaused;
+                }
+                return;
+            }
+
+            const key = e.key.toLowerCase();
+            if (key === 'arrowup' || key === 'w') {
+                if (direction.y === 0) nextDirection = {x: 0, y: -1};
+            } else if (key === 'arrowdown' || key === 's') {
+                if (direction.y === 0) nextDirection = {x: 0, y: 1};
+            } else if (key === 'arrowleft' || key === 'a') {
+                if (direction.x === 0) nextDirection = {x: -1, y: 0};
+            } else if (key === 'arrowright' || key === 'd') {
+                if (direction.x === 0) nextDirection = {x: 1, y: 0};
+            }
+        });
+
+        let foodSpawnInterval;
+
+        function startFoodSpawner() {
+            foodSpawnInterval = setInterval(() => {
+                if (gameRunning && !gamePaused) {
+                    generateFood();
+                }
+            }, 2000);
+        }
+
+        function resume() {
+            creditInfoModal.classList.remove("show");
+            gamePaused = !gamePaused;
+        }
+
+        function stopFoodSpawner() {
+            clearInterval(foodSpawnInterval);
+        }
+
+        startBtn.addEventListener('click', () => {
+            startGame();
+            startFoodSpawner();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            resetGame();
+            stopFoodSpawner();
+        });
+
+        generateFood();
+        draw();
+    </script>
+</body>
+</html>
