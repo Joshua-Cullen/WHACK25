@@ -9,6 +9,7 @@ const uploadSection = document.getElementById('uploadSection');
 const displaySection = document.getElementById('displaySection');
 const removeFileBtn = document.getElementById('removeFileBtn');
 const backBtn = document.getElementById('backBtn');
+const loadingScreen = document.getElementById('loadingScreen');
 
 // Store selected file
 let selectedFile = null;
@@ -64,7 +65,14 @@ function formatFileSize(bytes) {
 // Upload button click
 uploadBtn.addEventListener('click', () => {
     if (selectedFile) {
-        showDisplay();
+        // Show loading screen
+        loadingScreen.classList.add('active');
+        
+        // Simulate processing time (1.5 seconds)
+        setTimeout(() => {
+            loadingScreen.classList.remove('active');
+            showDisplay();
+        }, 1500);
     }
 });
 
