@@ -10,10 +10,11 @@
   input, select, button { margin: 5px; padding: 5px; }
   table { width: 100%; border-collapse: collapse; margin-top: 20px; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-  .summary { margin-top: 20px; }
-  .charts-container { display: flex; align-items: flex-start; gap: 40px; margin-top: 30px; }
-  .chart-box { flex: 1; text-align: center; }
+  .chart-box { text-align: center; }
   canvas { max-width: 100%; height: auto; }
+  .charts-container { display: flex; gap: 40px; align-items: flex-start; margin-top: 30px; flex-wrap: wrap; }
+  .summary-container { display: flex; align-items: flex-start; gap: 40px; margin-top: 20px; }
+  @media (max-width: 900px) { .charts-container { flex-direction: column; } .summary-container { flex-direction: column; } }
 </style>
 </head>
 <body>
@@ -31,10 +32,32 @@
   <button type="submit">Add</button>
 </form>
 
-<div class="summary">
-  <p>Total Income: $<span id="totalIncome">0</span></p>
-  <p>Total Expenses: $<span id="totalExpenses">0</span></p>
-  <p>Net Cash Flow: $<span id="netFlow">0</span></p>
+<div class="summary-container">
+  <div class="summary">
+    <p>Total Income: $<span id="totalIncome">0</span></p>
+    <p>Total Expenses: $<span id="totalExpenses">0</span></p>
+    <p>Net Cash Flow: $<span id="netFlow">0</span></p>
+  </div>
+
+  <div class="charts-container">
+    <!-- Net Cash Flow Line Chart -->
+    <div class="chart-box" style="flex:1; min-width:300px;">
+      <h3>Historical Net Cash Flow</h3>
+      <canvas id="netFlowChart"></canvas>
+    </div>
+
+    <!-- Pie Chart on the Right -->
+    <div class="chart-box" style="flex:1; min-width:300px;">
+      <h3>Cash Flow by Category</h3>
+      <canvas id="cashFlowPie"></canvas>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:20px;">
+  <label>View from: <input type="date" id="startDate"></label>
+  <label>to: <input type="date" id="endDate"></label>
+  <button id="applyFilterBtn">Apply Filter</button>
 </div>
 
 <table>
@@ -44,62 +67,40 @@
   <tbody id="entryTable"></tbody>
 </table>
 
-<div class="charts-container">
-  <div class="chart-box">
-    <h3>Income by Category</h3>
-    <canvas id="incomePie"></canvas>
-  </div>
-  <div class="chart-box">
-    <h3>Expenses by Category</h3>
-    <canvas id="expensePie"></canvas>
-  </div>
-</div>
-
 <script>
 const form = document.getElementById('cashForm');
-const entries = [];
-const descriptionMap = {}; // Stores latest amount/type per description
+let entries = [];
+let descriptionMap = {};
 
-// Form field references
 const dateInput = document.getElementById('date');
 const descInput = document.getElementById('desc');
 const amountInput = document.getElementById('amount');
 const typeSelect = document.getElementById('type');
 
-// Default date to today
+// Default date today
 dateInput.value = new Date().toISOString().split('T')[0];
 
-// Charts setup
-const incomeCtx = document.getElementById('incomePie').getContext('2d');
-const expenseCtx = document.getElementById('expensePie').getContext('2d');
+// Charts
+const cashFlowCtx = document.getElementById('cashFlowPie').getContext('2d');
+const netFlowCtx = document.getElementById('netFlowChart').getContext('2d');
 
-const incomeChart = new Chart(incomeCtx, {
+const cashFlowChart = new Chart(cashFlowCtx, {
   type: 'pie',
   data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
   options: { responsive: true }
 });
 
-const expenseChart = new Chart(expenseCtx, {
-  type: 'pie',
-  data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+const netFlowChart = new Chart(netFlowCtx, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'Net Cash Flow', data: [], borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.1)', fill: true, tension: 0.2 }] },
   options: { responsive: true }
 });
 
-// Random shade generators
-function getGreenShade() {
-  const hue = 120; 
-  const saturation = Math.floor(Math.random() * 30) + 60; 
-  const lightness = Math.floor(Math.random() * 20) + 40;  
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
-function getRedShade() {
-  const hue = 0; 
-  const saturation = Math.floor(Math.random() * 30) + 60; 
-  const lightness = Math.floor(Math.random() * 20) + 40;  
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
+// Color generators
+function getGreenShade() { return `hsl(${Math.floor(Math.random()*30)+100}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
+function getRedShade() { return `hsl(${Math.floor(Math.random()*20)+0}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
 
-// Autofill amount/type when description changes
+// Autofill description
 descInput.addEventListener('input', () => {
   const desc = descInput.value.trim();
   if (descriptionMap[desc]) {
@@ -108,11 +109,26 @@ descInput.addEventListener('input', () => {
   }
 });
 
-// Update table
-function updateTable() {
+// Filter elements
+const startDate = document.getElementById('startDate');
+const endDate = document.getElementById('endDate');
+const applyFilterBtn = document.getElementById('applyFilterBtn');
+
+function getFilteredEntries() {
+  const start = startDate.value ? new Date(startDate.value) : null;
+  const end = endDate.value ? new Date(endDate.value) : null;
+  return entries.filter(e => {
+    const d = new Date(e.date);
+    if(start && d<start) return false;
+    if(end && d>end) return false;
+    return true;
+  });
+}
+
+function updateTable(filteredEntries) {
   const tbody = document.getElementById('entryTable');
   tbody.innerHTML = '';
-  entries.forEach(e => {
+  filteredEntries.forEach(e => {
     tbody.innerHTML += `<tr>
       <td>${e.date}</td>
       <td>${e.description}</td>
@@ -122,93 +138,92 @@ function updateTable() {
   });
 }
 
-// Update summary
-function updateSummary() {
-  let income = 0, expense = 0;
-  entries.forEach(e => e.type === 'income' ? income += e.amount : expense += e.amount);
+function updateSummary(filteredEntries) {
+  let income=0, expense=0;
+  filteredEntries.forEach(e => e.type==='income'? income+=e.amount : expense+=e.amount);
   document.getElementById('totalIncome').innerText = income.toFixed(2);
   document.getElementById('totalExpenses').innerText = expense.toFixed(2);
-  document.getElementById('netFlow').innerText = (income - expense).toFixed(2);
+  document.getElementById('netFlow').innerText = (income-expense).toFixed(2);
 }
 
-// Update charts
-function updateCharts() {
-  const incomeMap = {};
-  const expenseMap = {};
-
-  entries.forEach(e => {
-    if(e.type === 'income') incomeMap[e.description] = (incomeMap[e.description] || 0) + e.amount;
-    else expenseMap[e.description] = (expenseMap[e.description] || 0) + e.amount;
+function updateCashFlowChart(filteredEntries) {
+  const dataMap = {};
+  const colorMap = {};
+  filteredEntries.forEach(e=>{
+    dataMap[e.description] = (dataMap[e.description]||0)+e.amount;
+    colorMap[e.description] = e.type==='income'?getGreenShade():getRedShade();
   });
-
-  incomeChart.data.labels = Object.keys(incomeMap);
-  incomeChart.data.datasets[0].data = Object.values(incomeMap);
-  incomeChart.data.datasets[0].backgroundColor = Object.keys(incomeMap).map(() => getGreenShade());
-  incomeChart.update();
-
-  expenseChart.data.labels = Object.keys(expenseMap);
-  expenseChart.data.datasets[0].data = Object.values(expenseMap);
-  expenseChart.data.datasets[0].backgroundColor = Object.keys(expenseMap).map(() => getRedShade());
-  expenseChart.update();
+  const labels=Object.keys(dataMap);
+  const data=Object.values(dataMap);
+  const colors=labels.map(l=>colorMap[l]);
+  cashFlowChart.data.labels=labels;
+  cashFlowChart.data.datasets[0].data=data;
+  cashFlowChart.data.datasets[0].backgroundColor=colors;
+  cashFlowChart.update();
 }
 
-// Database setup
-const USER = "demoUser"; // replace with login system if needed
+function updateNetFlowChart(filteredEntries) {
+  const sorted=[...filteredEntries].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const labels=[], data=[];
+  let cumulative=0;
+  sorted.forEach(e=>{
+    cumulative += e.type==='income'? e.amount : -e.amount;
+    labels.push(e.date);
+    data.push(cumulative);
+  });
+  netFlowChart.data.labels=labels;
+  netFlowChart.data.datasets[0].data=data;
+  netFlowChart.update();
+}
 
-// Load existing entries from DB
-window.addEventListener("DOMContentLoaded", async () => {
-  try {
+// DB integration
+const USER="demoUser";
+
+window.addEventListener("DOMContentLoaded", async ()=>{
+  try{
     const res = await fetch(`/api/entries/${USER}`);
     const savedEntries = await res.json();
     entries.push(...savedEntries);
-    updateTable();
-    updateSummary();
-    updateCharts();
-  } catch (err) {
-    console.error("Failed to load entries:", err);
-  }
+    applyFilter();
+  }catch(err){ console.error(err); }
 });
 
-// Save new entry to DB
-async function saveToDatabase(entry) {
-  try {
-    await fetch("/api/entries", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user: USER, ...entry })
+async function saveToDatabase(entry){
+  try{
+    await fetch("/api/entries",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ user:USER, ...entry })
     });
-  } catch(err) {
-    console.error("Failed to save entry:", err);
-  }
+  }catch(err){ console.error(err); }
 }
 
-// Form submit
-form.addEventListener('submit', async function(e) {
+function applyFilter() {
+  const filtered = getFilteredEntries();
+  updateTable(filtered);
+  updateSummary(filtered);
+  updateCashFlowChart(filtered);
+  updateNetFlowChart(filtered);
+}
+
+applyFilterBtn.addEventListener('click', applyFilter);
+
+form.addEventListener('submit', async function(e){
   e.preventDefault();
+  const date=dateInput.value;
+  const description=descInput.value.trim();
+  const amount=parseFloat(amountInput.value);
+  const type=typeSelect.value;
+  if(!description || isNaN(amount) || !date || !type){ alert("Please fill all fields correctly"); return; }
 
-  const date = dateInput.value;
-  const description = descInput.value.trim();
-  const amount = parseFloat(amountInput.value);
-  const type = typeSelect.value;
-
-  if (!description || isNaN(amount) || !date || !type) {
-    alert("Please fill in all fields correctly.");
-    return;
-  }
-
-  const entry = { date, description, amount, type };
-
+  const entry={date, description, amount, type};
   entries.push(entry);
-  descriptionMap[description] = { amount, type };
-
-  updateTable();
-  updateSummary();
-  updateCharts();
+  descriptionMap[description]={amount,type};
 
   await saveToDatabase(entry);
-
   form.reset();
-  dateInput.value = new Date().toISOString().split('T')[0];
+  dateInput.value=new Date().toISOString().split('T')[0];
+  applyFilter();
 });
 </script>
 </body>
