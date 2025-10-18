@@ -12,7 +12,7 @@
           crossorigin="anonymous">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" type="text/css" href="upload_css.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='upload_css.css') }}">
 </head>
 <body>
 
@@ -73,7 +73,8 @@
                     <div class="upload-hint">Supports any file type</div>
                 </div>
                 
-                <input type="file" id="fileInput">
+                <form method="post" action="/submit" enctype="multipart/form-data">
+                <input type="file" name="file" id="fileInput">
                 
                 <div class="file-info" id="fileInfo">
                     <button class="remove-file-btn" id="removeFileBtn">×</button>
@@ -81,7 +82,8 @@
                     <div class="file-size" id="fileSize"></div>
                 </div>
                 
-                <button class="upload-btn" id="uploadBtn" disabled>Upload</button>
+                <input type="submit" value="Upload" class="upload-btn" id="uploadBtn">
+                </form>   
             </div>
         </div>
     </div>
@@ -92,6 +94,6 @@
             crossorigin="anonymous"></script>
     
     <!-- Custom JavaScript -->
-    <script type="text/javascript" src="upload_js.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='upload_js.js') }}"></script>
 </body>
 </html>

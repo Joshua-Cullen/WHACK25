@@ -12,7 +12,7 @@
           crossorigin="anonymous">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" type="text/css" href="display_css.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='display_css.css') }}">
 </head>
 <body>
 
@@ -71,13 +71,21 @@
                 <div class="divider"></div>
                 <div class="box-section">
                     <div class="subsection">
-                        <h3>Section 2A</h3>
-                        <p>Content for the first part of section 2.</p>
+                        <h1>Client (You)</h1>
+                        <p>{{ response["part_1"] }}%</p>
+                        <h1>Other Party (Company)</h1>
+                        <p>{{ response["part_2"] }}%</p>
                     </div>
                     <div class="horizontal-divider"></div>
                     <div class="subsection">
-                        <h3>Section 2B</h3>
-                        <p>Content for the second part of section 2.</p>
+                        <h1>Explantation</h1>
+                        <p>{{ response["part_3"] }}</p>
+                        <h1>Improvements</h1>
+                        <ul>
+                            {% for improvement in response["part_4"] %}
+                                <li>{{ improvement }}</li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -90,6 +98,6 @@
             crossorigin="anonymous"></script>
     
     <!-- Custom JavaScript -->
-    <script type="text/javascript" src="display_js.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='display_js.js') }}"></script>
 </body>
 </html>

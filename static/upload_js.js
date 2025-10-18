@@ -64,13 +64,6 @@ uploadBtn.addEventListener('click', () => {
     if (selectedFile) {
         // Show loading screen
         loadingScreen.classList.add('active');
-        
-        // Simulate processing time (1.5 seconds)
-        setTimeout(() => {
-            loadingScreen.classList.remove('active');
-            // Redirect to display page
-            window.location.href = 'display_html.html';
-        }, 1500);
     }
 });
 
