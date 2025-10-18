@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Viewer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+    <title>Snake Game</title>
     <style>
         * {
             margin: 0;
@@ -16,378 +14,462 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
 
-        .container {
-            max-width: 900px;
-            width: 100%;
-            background: white;
-            border-radius: 12px;
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
             text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1em;
-        }
-
-        .upload-section {
-            padding: 40px;
-            text-align: center;
-        }
-
-        .upload-box {
-            border: 3px dashed #667eea;
-            border-radius: 8px;
-            padding: 60px 40px;
-            background: #f8f9ff;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-box:hover {
-            background: #f0f2ff;
-            border-color: #764ba2;
-        }
-
-        .upload-box.dragover {
-            background: #e8ebff;
-            border-color: #764ba2;
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 4em;
             margin-bottom: 20px;
         }
 
-        .upload-box h2 {
+        h1 {
             color: #667eea;
+            font-size: 2.5em;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .upload-box p {
-            color: #666;
+        .score-board {
+            display: flex;
+            justify-content: space-around;
             margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
         }
 
-        input[type="file"] {
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            background: #1a1a2e;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
             display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .game-over h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .game-over p {
+            font-size: 1.2em;
+            margin-bottom: 25px;
         }
 
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 1em;
-            border-radius: 6px;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: bold;
+            margin-top: 10px;
         }
 
         .btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .viewer-section {
-            display: none;
-            padding: 20px;
+        .btn:active {
+            transform: translateY(0);
         }
 
         .controls {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .controls h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .controls p {
+            color: #666;
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+
+        .difficulty {
             display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
-        .controls button {
-            background: #667eea;
-            color: white;
-            border: none;
+        .difficulty button {
             padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background 0.3s;
-        }
-
-        .controls button:hover {
-            background: #764ba2;
-        }
-
-        .page-info {
-            color: #666;
-            font-weight: bold;
-        }
-
-        .canvas-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            padding: 20px;
-            overflow: auto;
-            max-height: 70vh;
-        }
-
-        .page-wrapper {
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 2px solid #667eea;
             background: white;
-        }
-
-        .pdf-canvas {
-            display: block;
-            max-width: 100%;
-            height: auto;
-        }
-
-        .text-layer {
-            position: absolute;
-            left: 0;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            overflow: hidden;
-            opacity: 0;
-            line-height: 1.0;
-            mix-blend-mode: multiply;
-        }
-
-        .text-layer > span {
-            color: black;
-            position: absolute;
-            white-space: pre;
-            cursor: text;
-            transform-origin: 0% 0%;
-        }
-
-        .text-layer ::selection {
-            background: rgba(0, 123, 255, 0.5);
-        }
-        
-        .text-layer:hover {
-            opacity: 0.3;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
             color: #667eea;
-            font-size: 1.2em;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .difficulty button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .difficulty button:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="game-container">
         <div class="header">
-            <h1>📄 PDF Viewer</h1>
-            <p>Upload and view your PDF documents with copyable text</p>
+            <h1>🐍 Snake Game</h1>
         </div>
 
-        <div class="upload-section" id="uploadSection">
-            <div class="upload-box" id="uploadBox">
-                <div class="upload-icon">📁</div>
-                <h2>Drop your PDF here</h2>
-                <p>or click to browse</p>
-                <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
-                <input type="file" id="fileInput" accept=".pdf" />
+        <div class="difficulty">
+            <button class="diff-btn" data-speed="120">Easy</button>
+            <button class="diff-btn active" data-speed="80">Normal</button>
+            <button class="diff-btn" data-speed="50">Hard</button>
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="score">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">High Score</div>
+                <div class="score-value" id="highScore">0</div>
             </div>
         </div>
 
-        <div class="viewer-section" id="viewerSection">
-            <div class="controls">
-                <span class="page-info">
-                    Total Pages: <span id="totalPages">0</span>
-                </span>
-                <button id="zoomOut">Zoom Out</button>
-                <button id="zoomIn">Zoom In</button>
-                <button id="newPdf">Upload New PDF</button>
-            </div>
-            <div class="canvas-container" id="canvasContainer">
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div class="game-over" id="gameOver">
+                <h2>Game Over!</h2>
+                <p>Your Score: <span id="finalScore">0</span></p>
+                <button class="btn" onclick="resetGame()">Play Again</button>
             </div>
         </div>
 
-        <div class="loading" id="loading" style="display: none;">
-            Loading PDF...
+        <div class="controls">
+            <h3>Controls</h3>
+            <p>🎮 Arrow Keys or WASD to move</p>
+            <p>🎯 Eat the food to grow and score points</p>
+            <p>⚠️ Don't hit the walls or yourself!</p>
         </div>
     </div>
 
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        const gameOverEl = document.getElementById('gameOver');
+        const finalScoreEl = document.getElementById('finalScore');
 
-        let pdfDoc = null;
-        let scale = 1.5;
-        const canvasContainer = document.getElementById('canvasContainer');
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
 
-        const uploadBox = document.getElementById('uploadBox');
-        const fileInput = document.getElementById('fileInput');
-        const uploadSection = document.getElementById('uploadSection');
-        const viewerSection = document.getElementById('viewerSection');
-        const loading = document.getElementById('loading');
+        let snake = [{x: 10, y: 10}];
+        let dx = 0;
+        let dy = 0;
+        let foodX = 15;
+        let foodY = 15;
+        let score = 0;
+        let highScore = 0;
+        let gameSpeed = 80;
+        let gameLoop;
+        let gameRunning = false;
 
-        // Drag and drop handlers
-        uploadBox.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadBox.classList.add('dragover');
+        // Difficulty buttons
+        const diffBtns = document.querySelectorAll('.diff-btn');
+        diffBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!gameRunning) {
+                    diffBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    gameSpeed = parseInt(btn.dataset.speed);
+                }
+            });
         });
 
-        uploadBox.addEventListener('dragleave', () => {
-            uploadBox.classList.remove('dragover');
-        });
+        // Keyboard controls
+        document.addEventListener('keydown', changeDirection);
 
-        uploadBox.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadBox.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type === 'application/pdf') {
-                loadPDF(files[0]);
+        function changeDirection(e) {
+            const key = e.key.toLowerCase();
+            const goingUp = dy === -1;
+            const goingDown = dy === 1;
+            const goingRight = dx === 1;
+            const goingLeft = dx === -1;
+
+            if ((key === 'arrowleft' || key === 'a') && !goingRight) {
+                dx = -1;
+                dy = 0;
+                if (!gameRunning) startGame();
             }
-        });
-
-        uploadBox.addEventListener('click', () => {
-            fileInput.click();
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                loadPDF(e.target.files[0]);
+            if ((key === 'arrowup' || key === 'w') && !goingDown) {
+                dx = 0;
+                dy = -1;
+                if (!gameRunning) startGame();
             }
-        });
-
-        function loadPDF(file) {
-            loading.style.display = 'block';
-            uploadSection.style.display = 'none';
-            viewerSection.style.display = 'none';
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const typedarray = new Uint8Array(e.target.result);
-                
-                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
-                    pdfDoc = pdf;
-                    document.getElementById('totalPages').textContent = pdf.numPages;
-                    loading.style.display = 'none';
-                    viewerSection.style.display = 'block';
-                    renderAllPages();
-                }).catch(err => {
-                    console.error('Error loading PDF:', err);
-                    alert('Error loading PDF. Please try another file.');
-                    loading.style.display = 'none';
-                    uploadSection.style.display = 'block';
-                });
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function renderAllPages() {
-            canvasContainer.innerHTML = '';
-            
-            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-                const pageWrapper = document.createElement('div');
-                pageWrapper.className = 'page-wrapper';
-                
-                const canvas = document.createElement('canvas');
-                canvas.className = 'pdf-canvas';
-                
-                const textLayer = document.createElement('div');
-                textLayer.className = 'text-layer';
-                
-                pageWrapper.appendChild(canvas);
-                pageWrapper.appendChild(textLayer);
-                canvasContainer.appendChild(pageWrapper);
-                
-                renderPage(pageNum, canvas, textLayer);
+            if ((key === 'arrowright' || key === 'd') && !goingLeft) {
+                dx = 1;
+                dy = 0;
+                if (!gameRunning) startGame();
+            }
+            if ((key === 'arrowdown' || key === 's') && !goingUp) {
+                dx = 0;
+                dy = 1;
+                if (!gameRunning) startGame();
             }
         }
 
-        async function renderPage(num, canvas, textLayer) {
-            const page = await pdfDoc.getPage(num);
-            const viewport = page.getViewport({ scale: scale });
-            
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            
-            textLayer.style.width = viewport.width + 'px';
-            textLayer.style.height = viewport.height + 'px';
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                gameLoop = setInterval(update, gameSpeed);
+            }
+        }
 
-            const renderContext = {
-                canvasContext: canvas.getContext('2d'),
-                viewport: viewport
-            };
+        function update() {
+            moveSnake();
+            
+            if (checkCollision()) {
+                endGame();
+                return;
+            }
 
-            await page.render(renderContext).promise;
-            
-            // Render text layer
-            const textContent = await page.getTextContent();
-            textLayer.innerHTML = '';
-            
-            textContent.items.forEach(item => {
-                if (!item.str.trim()) return; // Skip empty strings
-                
-                const span = document.createElement('span');
-                const tx = pdfjsLib.Util.transform(
-                    viewport.transform,
-                    item.transform
+            if (snake[0].x === foodX && snake[0].y === foodY) {
+                score += 10;
+                scoreEl.textContent = score;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+
+            draw();
+        }
+
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+
+            // Wall collision
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                return true;
+            }
+
+            // Self collision
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function generateFood() {
+            foodX = Math.floor(Math.random() * tileCount);
+            foodY = Math.floor(Math.random() * tileCount);
+
+            // Make sure food doesn't spawn on snake
+            for (let segment of snake) {
+                if (segment.x === foodX && segment.y === foodY) {
+                    generateFood();
+                    return;
+                }
+            }
+        }
+
+        function draw() {
+            // Clear canvas with grid pattern
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = '#252542';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= tileCount; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * gridSize, 0);
+                ctx.lineTo(i * gridSize, canvas.height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * gridSize);
+                ctx.lineTo(canvas.width, i * gridSize);
+                ctx.stroke();
+            }
+
+            // Draw snake with gradient
+            snake.forEach((segment, index) => {
+                const opacity = 1 - (index / snake.length) * 0.5;
+                const gradient = ctx.createLinearGradient(
+                    segment.x * gridSize, 
+                    segment.y * gridSize,
+                    segment.x * gridSize + gridSize, 
+                    segment.y * gridSize + gridSize
                 );
                 
-                const fontHeight = Math.sqrt((tx[2] * tx[2]) + (tx[3] * tx[3]));
-                const fontWidth = Math.sqrt((tx[0] * tx[0]) + (tx[1] * tx[1]));
-                
-                span.style.left = tx[4] + 'px';
-                span.style.top = (tx[5] - fontHeight) + 'px';
-                span.style.fontSize = fontHeight + 'px';
-                span.style.transform = 'scaleX(' + (fontWidth / fontHeight) + ')';
-                span.textContent = item.str;
-                
-                textLayer.appendChild(span);
+                if (index === 0) {
+                    gradient.addColorStop(0, '#4ade80');
+                    gradient.addColorStop(1, '#22c55e');
+                } else {
+                    gradient.addColorStop(0, `rgba(74, 222, 128, ${opacity})`);
+                    gradient.addColorStop(1, `rgba(34, 197, 94, ${opacity})`);
+                }
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(
+                    segment.x * gridSize + 1, 
+                    segment.y * gridSize + 1, 
+                    gridSize - 2, 
+                    gridSize - 2
+                );
+
+                // Add shine effect to head
+                if (index === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.fillRect(
+                        segment.x * gridSize + 3, 
+                        segment.y * gridSize + 3, 
+                        gridSize / 2 - 2, 
+                        gridSize / 2 - 2
+                    );
+                }
             });
+
+            // Draw food with pulsing effect
+            const pulse = Math.sin(Date.now() / 200) * 2 + 2;
+            const foodGradient = ctx.createRadialGradient(
+                foodX * gridSize + gridSize / 2,
+                foodY * gridSize + gridSize / 2,
+                0,
+                foodX * gridSize + gridSize / 2,
+                foodY * gridSize + gridSize / 2,
+                gridSize / 2 + pulse
+            );
+            foodGradient.addColorStop(0, '#ff6b6b');
+            foodGradient.addColorStop(0.7, '#ee5a52');
+            foodGradient.addColorStop(1, '#cc4444');
+
+            ctx.fillStyle = foodGradient;
+            ctx.beginPath();
+            ctx.arc(
+                foodX * gridSize + gridSize / 2,
+                foodY * gridSize + gridSize / 2,
+                gridSize / 2 - 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+
+            // Add sparkle to food
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(
+                foodX * gridSize + gridSize / 3,
+                foodY * gridSize + gridSize / 3,
+                2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
         }
 
-        document.getElementById('zoomIn').addEventListener('click', () => {
-            scale += 0.25;
-            renderAllPages();
-        });
+        function endGame() {
+            clearInterval(gameLoop);
+            gameRunning = false;
 
-        document.getElementById('zoomOut').addEventListener('click', () => {
-            if (scale > 0.5) {
-                scale -= 0.25;
-                renderAllPages();
+            if (score > highScore) {
+                highScore = score;
+                highScoreEl.textContent = highScore;
             }
-        });
 
-        document.getElementById('newPdf').addEventListener('click', () => {
-            viewerSection.style.display = 'none';
-            uploadSection.style.display = 'block';
-            pdfDoc = null;
-            scale = 1.5;
-            fileInput.value = '';
-            canvasContainer.innerHTML = '';
-        });
+            finalScoreEl.textContent = score;
+            gameOverEl.style.display = 'block';
+        }
+
+        function resetGame() {
+            snake = [{x: 10, y: 10}];
+            dx = 0;
+            dy = 0;
+            score = 0;
+            scoreEl.textContent = score;
+            gameOverEl.style.display = 'none';
+            generateFood();
+            draw();
+        }
+
+        // Initial draw
+        generateFood();
+        draw();
     </script>
 </body>
 </html>
