@@ -7,12 +7,12 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template("login_index.html")
+    return render_template("game_html.html")
 
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "GET":
-        return render_template("login_index.html")
+        return render_template("login_html.html")
     elif request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]

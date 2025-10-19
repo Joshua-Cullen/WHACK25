@@ -9,6 +9,21 @@
           rel="stylesheet" 
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
           crossorigin="anonymous">
+    
+    <script>
+        function updateScale() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            // UPDATED: Scale to fill the *entire* viewport (100vw, 100vh)
+            const scale = Math.min(
+                vw / 1525,
+                vh / 800
+            );
+            document.documentElement.style.setProperty('--scale-factor', scale);
+        }
+        window.addEventListener('resize', updateScale);
+        window.addEventListener('load', updateScale);
+    </script>
           
     <style>
         * {
@@ -18,15 +33,33 @@
         }
 
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
             background: #f8f9fa;
             font-family: 'Arial', sans-serif;
             color: #333;
-            padding-top: 70px;
-            overflow-x: auto; 
+            margin: 0;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .scale-container {
+            position: absolute;
+            /* UPDATED: Centered in the full 100vh viewport */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(var(--scale-factor));
+            transform-origin: center;
+            width: 1525px;
+            margin: 0;
+            padding: 0;
         }
         
         /* Navbar Styles (Unchanged) */
@@ -45,9 +78,25 @@
             cursor: pointer !important;
         }
 
+        :root {
+            --scale-factor: 1;
+        }
+
+        @media screen {
+            :root {
+                /* UPDATED: Scale to fill entire 100vw and 100vh */
+                --scale-factor: min(
+                    calc(100vw / 1525),
+                    calc(100vh / 800)
+                );
+            }
+        }
+
         .container {
             text-align: center;
-            min-width: 1525px;
+            width: 1525px;
+            margin: 0;
+            padding: 0;
         }
 
         h1 {
@@ -55,6 +104,9 @@
             color: #001f3f;
             font-size: 2.5em;
             text-shadow: none;
+            white-space: nowrap;
+            text-align: center;
+            width: 100%;
         }
 
         .game-wrapper {
@@ -63,9 +115,11 @@
             align-items: flex-start;
             justify-content: center;
             flex-wrap: nowrap;
-            max-width: 1525px;
+            width: 1485px; /* 1525px - 40px (padding) */
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0;
+            position: relative;
+            left: 0;
         }
 
         .legend-panel {
@@ -98,6 +152,16 @@
         .legend-panel th,
         .legend-panel td {
             padding: 8px 5px;
+        }
+
+        @media screen and (max-width: 1600px) {
+            .navbar-brand {
+                transform-origin: left center;
+                transform: scale(calc(min(1, 95vw/1525)));
+            }
+        }
+
+        .legend-panel td {
             border-bottom: 1px solid #eee;
             vertical-align: middle;
         }
@@ -404,8 +468,9 @@
         <img id="onTimePayment" src="{{ url_for('static', filename='icons/onTimePayment.png') }}">
     </div>
 
-    <div class="container">
-        <div class="game-wrapper">
+    <div class="scale-container">
+        <div class="container">
+            <div class="game-wrapper">
 
             <div class="legend-panel">
                 <h4>Game Legend</h4>
