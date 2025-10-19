@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cash Flow Tool — Enhanced Entry System</title>
+
+<!-- Bootstrap CSS (CDN) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+
+<style>
+  :root{
+    --bg: #ffffff;
+    --accent: #001f3f;
+    --muted: #6b7280;
+    --surface: #f8fafc;
+    --radius: 8px;
+  }
+  html,body{height:100%;}
+  body {
+    font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    background: var(--bg);
+    color: #0b1220;
+    padding: 32px;
+    padding-top: 100px;
+    max-width: 1100px;
+    margin: 24px auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  h2{ color: var(--accent); font-weight:600; margin:0 0 18px 0; }
+
+  form#cashForm{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:18px; }
+  input[type="date"], input[type="text"], input[type="number"], select{
+    border: 1px solid #e6e9ee;
+    background: var(--surface);
+    padding:10px 12px;
+    border-radius: var(--radius);
+    outline: none;
+    min-width: 160px;
+  }
+  button#addEntryBtn{ background: var(--accent); color: white; border-radius:10px; padding:8px 12px; font-weight:600; border:none; cursor:pointer; }
+
+  .summary-container{ display:flex; gap:24px; align-items:flex-start; margin-top:10px; }
+  .summary{ background: linear-gradient(180deg, #ffffff 0%, var(--surface) 100%); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(10,20,40,0.04); min-width:240px; }
+  .summary p{ margin:6px 0; color:var(--muted); }
+  .summary p span{ color: var(--accent); font-weight:700; }
+
+  .charts-container{ display:flex; gap:28px; margin-top:18px; align-items:flex-start; flex-wrap:wrap; }
+  .chart-box{ background: white; padding:14px; border-radius:12px; box-shadow:0 8px 24px rgba(10,20,40,0.04); }
+  canvas{ max-width:100%; height:260px; }
+
+  table{ width:100%; border-collapse:collapse; margin-top:18px; background:white; border-radius:8px; overflow:hidden; box-shadow:0 8px 24px rgba(10,20,40,0.04); }
+  thead th{ text-align:left; padding:12px 16px; color:var(--muted); font-weight:600; background: linear-gradient(180deg, #ffffff, #fbfdff); }
+  tbody td{ padding:12px 16px; border-top:1px solid #f1f5f9; }
+  
+  .delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: opacity 0.2s;
+  }
+  .delete-btn:hover {
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #001f3f;">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="upload_html.html" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px;">JAK</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link active" href="#">element1</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">element2</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">element3</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<h2>Cash Flow Analysis</h2>
+
+<form id="cashForm">
+  <input type="date" id="date" required>
+  <select id="itemDropdown" required style="min-width:250px;">
+    <option value="">-- Select Item --</option>
+    <option value="__add_new__">+ Add New Item</option>
+  </select>
+  <button type="submit" id="addEntryBtn">Add Entry</button>
+</form>
+
+<!-- Modal for adding new items -->
+<div id="newItemModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:white; padding:32px; border-radius:12px; max-width:500px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <h3 style="margin-top:0; color:var(--accent);">Add New Item</h3>
+    <form id="newItemForm">
+      <div style="margin-bottom:16px;">
+        <label style="display:block; margin-bottom:6px; font-weight:600;">Description</label>
+        <input type="text" id="newItemDesc" placeholder="e.g., Salary, Coffee, Rent" required style="width:100%;">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block; margin-bottom:6px; font-weight:600;">Type</label>
+        <select id="newItemType" required style="width:100%;">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block; margin-bottom:6px; font-weight:600;">Amount</label>
+        <input type="number" id="newItemAmount" placeholder="0.00" step="0.01" required style="width:100%;">
+      </div>
+      <div style="margin-bottom:24px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="newItemRepeat" style="width:18px; height:18px;">
+          <span style="font-weight:600;">Save as repeating item (add to dropdown)</span>
+        </label>
+      </div>
+      <div style="display:flex; gap:12px; justify-content:flex-end;">
+        <button type="button" id="cancelItemBtn" style="padding:10px 20px; border:1px solid #d1d5db; background:white; border-radius:8px; cursor:pointer;">Cancel</button>
+        <button type="submit" style="padding:10px 20px; background:var(--accent); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- DATE RANGE CONTROLS -->
+<div style="margin-top:6px; margin-bottom:18px;">
+  <div class="d-flex align-items-center" style="gap:8px;">
+    <label class="mb-0">Start: <input type="date" id="startDate"></label>
+    <label class="mb-0">End: <input type="date" id="endDate"></label>
+    <button id="applyFilterBtn" type="button" class="btn" style="background:var(--accent); color:#fff; border-radius:8px; padding:8px 12px;">Apply Filter</button>
+  </div>
+</div>
+
+<!-- SUMMARY + CHARTS -->
+<div class="summary-container">
+  <div class="summary">
+    <p>Total Income: $<span id="totalIncome">0</span></p>
+    <p>Total Expenses: $<span id="totalExpenses">0</span></p>
+    <p>Net Cash Flow: $<span id="netFlow">0</span></p>
+  </div>
+
+  <div class="charts-container">
+    <div class="chart-box" style="flex:1; min-width:300px;">
+      <h3>Historical Net Cash Flow</h3>
+      <canvas id="netFlowChart"></canvas>
+    </div>
+
+    <div class="chart-box" style="flex:1; min-width:300px;">
+      <h3>Cash Flow by Category</h3>
+      <canvas id="cashFlowPie"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- TABLE -->
+<table>
+  <thead>
+    <tr><th>Date</th><th>Description</th><th>Amount</th><th>Type</th><th>Actions</th></tr>
+  </thead>
+  <tbody id="entryTable"></tbody>
+</table>
+
+<!-- SCRIPT: merged, complete logic -->
+<script>
+/* -------------------------
+   Data & UI element binding
+   ------------------------- */
+const form = document.getElementById('cashForm');
+let entries = [];                     // in-memory entries
+let savedItems = {};                  // saved repeating items
+
+// form inputs
+const dateInput = document.getElementById('date');
+const itemDropdown = document.getElementById('itemDropdown');
+
+// modal elements
+const modal = document.getElementById('newItemModal');
+const newItemForm = document.getElementById('newItemForm');
+const newItemDesc = document.getElementById('newItemDesc');
+const newItemType = document.getElementById('newItemType');
+const newItemAmount = document.getElementById('newItemAmount');
+const newItemRepeat = document.getElementById('newItemRepeat');
+const cancelItemBtn = document.getElementById('cancelItemBtn');
+
+// filter and controls
+const startDateInput = document.getElementById('startDate');
+const endDateInput   = document.getElementById('endDate');
+const applyFilterBtn = document.getElementById('applyFilterBtn');
+
+// initialize date inputs: today for entry, +/- 30 days for range
+const today = new Date();
+const todayISO = today.toISOString().split('T')[0];
+const startDate = new Date(today);
+startDate.setDate(startDate.getDate() - 30);
+const endDate = new Date(today);
+endDate.setDate(endDate.getDate() + 30);
+
+dateInput.value = todayISO;
+startDateInput.value = startDate.toISOString().split('T')[0];
+endDateInput.value = endDate.toISOString().split('T')[0];
+
+/* -------------------------
+   Charts setup (Chart.js)
+   ------------------------- */
+const cashFlowCtx = document.getElementById('cashFlowPie').getContext('2d');
+const netFlowCtx  = document.getElementById('netFlowChart').getContext('2d');
+
+const cashFlowChart = new Chart(cashFlowCtx, {
+  type: 'pie',
+  data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+});
+
+const netFlowChart = new Chart(netFlowCtx, {
+  type: 'line',
+  data: { labels: [], datasets: [{ label: 'Net Cash Flow', data: [], borderColor: 'blue', backgroundColor: 'rgba(0,0,255,0.08)', fill: true, tension: 0.2, segment: {
+    borderColor: ctx => ctx.p0.parsed.y >= 0 && ctx.p1.parsed.y >= 0 ? '#10b981' : ctx.p0.parsed.y < 0 && ctx.p1.parsed.y < 0 ? '#ef4444' : 'blue',
+    backgroundColor: ctx => ctx.p0.parsed.y >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'
+  }}] },
+  options: { 
+    responsive: true, 
+    interaction: { mode: 'index' }, 
+    plugins: { 
+      legend: { display: false },
+      annotation: {
+        annotations: {
+          zeroLine: {
+            type: 'line',
+            yMin: 0,
+            yMax: 0,
+            borderColor: '#374151',
+            borderWidth: 2,
+            borderDash: [5, 5]
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        grid: {
+          color: ctx => ctx.tick.value === 0 ? '#374151' : 'rgba(0, 0, 0, 0.1)'
+        }
+      }
+    }
+  }
+});
+
+/* -------------------------
+   Helper color functions
+   ------------------------- */
+function getGreenShade() { return `hsl(${Math.floor(Math.random()*30)+100}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
+function getRedShade()   { return `hsl(${Math.floor(Math.random()*20)+0}, ${Math.floor(Math.random()*30)+60}%, ${Math.floor(Math.random()*30)+40}%)`; }
+
+/* -------------------------
+   CRUD & persistence
+   ------------------------- */
+const USER = "demoUser";
+
+/* Load data from server */
+async function loadFromDatabase() {
+  try {
+    const response = await fetch(`/api/entries/${USER}`);
+    const data = await response.json();
+    entries = data;
+    
+    // Build savedItems from entries
+    const itemMap = {};
+    entries.forEach(e => {
+      if (!itemMap[e.description]) {
+        itemMap[e.description] = { amount: e.amount, type: e.type };
+      }
+    });
+    savedItems = itemMap;
+    
+    updateDropdown();
+    applyFilter();
+  } catch(e) {
+    console.error('DB load error', e);
+    // Fallback to demo data if server not available
+    entries = [
+      { date: todayISO, description: 'Salary', amount: 2000, type: 'income' },
+      { date: todayISO, description: 'Coffee', amount: 3.50, type: 'expense' }
+    ];
+    savedItems['Salary'] = { amount: 2000, type: 'income' };
+    savedItems['Coffee'] = { amount: 3.5, type: 'expense' };
+    savedItems['Rent'] = { amount: 1200, type: 'expense' };
+    updateDropdown();
+    applyFilter();
+  }
+}
+
+window.addEventListener('DOMContentLoaded', loadFromDatabase);
+
+/* Save to server */
+async function saveToDatabase(entry){
+  try {
+    await fetch("/api/entries", { 
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify({user:USER, ...entry}) 
+    });
+  } catch(e) { 
+    console.error('DB save error', e); 
+  }
+}
+
+/* Delete from server */
+async function deleteFromDatabase(entryId) {
+  try {
+    await fetch(`/api/entries/${entryId}`, { 
+      method: 'DELETE'
+    });
+  } catch(e) {
+    console.error('DB delete error', e);
+  }
+}
+
+/* -------------------------
+   Filtering & UI updates
+   ------------------------- */
+function getFilteredEntries() {
+  const start = startDateInput.value ? new Date(startDateInput.value) : null;
+  const end   = endDateInput.value ? new Date(endDateInput.value) : null;
+  return entries.filter(e => {
+    const d = new Date(e.date);
+    if (start && d < start) return false;
+    if (end && d > end) return false;
+    return true;
+  });
+}
+
+function applyFilter() {
+  const filtered = getFilteredEntries();
+  updateTable(filtered);
+  updateSummary(filtered);
+  updateCashFlowChart(filtered);
+  updateNetFlowChart(filtered);
+}
+
+function updateTable(filteredEntries) {
+  const tbody = document.getElementById('entryTable');
+  tbody.innerHTML = '';
+  filteredEntries.forEach((e, index) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${e.date}</td>
+      <td>${e.description}</td>
+      <td>$${e.amount.toFixed(2)}</td>
+      <td>${e.type}</td>
+      <td><button class="delete-btn" data-index="${index}" data-id="${e.id || ''}">Delete</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  // Add event listeners to delete buttons
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const index = parseInt(e.target.dataset.index);
+      const entryId = e.target.dataset.id;
+      
+      if (confirm('Are you sure you want to delete this entry?')) {
+        // Delete from database if it has an ID
+        if (entryId) {
+          await deleteFromDatabase(entryId);
+        }
+        
+        // Remove from local array
+        entries.splice(entries.indexOf(filteredEntries[index]), 1);
+        
+        // Refresh UI
+        applyFilter();
+      }
+    });
+  });
+}
+
+function updateSummary(filteredEntries) {
+  let income=0, expense=0;
+  filteredEntries.forEach(e => e.type === 'income' ? income += e.amount : expense += e.amount);
+  document.getElementById('totalIncome').innerText   = income.toFixed(2);
+  document.getElementById('totalExpenses').innerText = expense.toFixed(2);
+  document.getElementById('netFlow').innerText       = (income - expense).toFixed(2);
+}
+
+function updateCashFlowChart(filteredEntries) {
+  const dataMap = {};
+  const colorMap = {};
+  filteredEntries.forEach(e => {
+    dataMap[e.description] = (dataMap[e.description] || 0) + e.amount;
+    colorMap[e.description] = e.type === 'income' ? getGreenShade() : getRedShade();
+  });
+  const labels = Object.keys(dataMap);
+  const data   = Object.values(dataMap);
+  const colors = labels.map(l => colorMap[l]);
+  cashFlowChart.data.labels = labels;
+  cashFlowChart.data.datasets[0].data = data;
+  cashFlowChart.data.datasets[0].backgroundColor = colors;
+  cashFlowChart.update();
+}
+
+function updateNetFlowChart(filteredEntries) {
+  const sorted = [...filteredEntries].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const labels = [];
+  const data = [];
+  let cumulative = 0;
+  sorted.forEach(e => {
+    cumulative += e.type === 'income' ? e.amount : -e.amount;
+    labels.push(e.date);
+    data.push(+cumulative.toFixed(2));
+  });
+  netFlowChart.data.labels = labels;
+  netFlowChart.data.datasets[0].data = data;
+  netFlowChart.update();
+}
+
+/* -------------------------
+   Form submission (add entry)
+   ------------------------- */
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const date = dateInput.value;
+  const selectedItem = itemDropdown.value;
+  
+  if (!date || !selectedItem) {
+    alert('Please select a date and item');
+    return;
+  }
+  
+  if (selectedItem === '__add_new__') {
+    // Open modal to add new item
+    openModal();
+    return;
+  }
+  
+  // Get item details from savedItems
+  const itemData = savedItems[selectedItem];
+  if (!itemData) {
+    alert('Invalid item selected');
+    return;
+  }
+  
+  const entry = { 
+    date, 
+    description: selectedItem, 
+    amount: itemData.amount, 
+    type: itemData.type 
+  };
+  
+  entries.push(entry);
+  await saveToDatabase(entry);
+  
+  // Reset form
+  itemDropdown.value = '';
+  applyFilter();
+});
+
+/* -------------------------
+   Modal functionality
+   ------------------------- */
+function openModal() {
+  modal.style.display = 'flex';
+  newItemForm.reset();
+}
+
+function closeModal() {
+  modal.style.display = 'none';
+  newItemForm.reset();
+}
+
+cancelItemBtn.addEventListener('click', closeModal);
+
+// Close modal when clicking outside
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    closeModal();
+  }
+});
+
+// Handle new item form submission
+newItemForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  
+  const description = newItemDesc.value.trim();
+  const type = newItemType.value;
+  const amount = parseFloat(newItemAmount.value);
+  const isRepeat = newItemRepeat.checked;
+  
+  if (!description || isNaN(amount)) {
+    alert('Please fill all fields correctly');
+    return;
+  }
+  
+  // Add entry immediately
+  const date = dateInput.value;
+  const entry = { date, description, amount, type };
+  entries.push(entry);
+  await saveToDatabase(entry);
+  
+  // If repeat, save to dropdown
+  if (isRepeat) {
+    savedItems[description] = { amount, type };
+    updateDropdown();
+  }
+  
+  closeModal();
+  itemDropdown.value = '';
+  applyFilter();
+});
+
+/* -------------------------
+   Update dropdown with saved items
+   ------------------------- */
+function updateDropdown() {
+  // Clear existing options except the first two
+  itemDropdown.innerHTML = '<option value="">-- Select Item --</option><option value="__add_new__">+ Add New Item</option>';
+  
+  // Add saved items, sorted alphabetically
+  const sortedItems = Object.keys(savedItems).sort();
+  sortedItems.forEach(desc => {
+    const item = savedItems[desc];
+    const option = document.createElement('option');
+    option.value = desc;
+    option.textContent = `${desc} ($${item.amount.toFixed(2)} - ${item.type})`;
+    itemDropdown.appendChild(option);
+  });
+}
+
+/* -------------------------
+   Apply filter button
+   ------------------------- */
+applyFilterBtn.addEventListener('click', ()=>{
+  applyFilter();
+});
+
+</script>
+
+<!-- Bootstrap JS bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</body>
+</html>
