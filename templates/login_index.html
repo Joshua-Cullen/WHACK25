@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neumorphism Login Form</title>
-    <link rel="stylesheet" href="login_style.css">
+    <title></title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login_style.css') }}">
 </head>
 <body>
     <div class="login-container">
@@ -22,7 +22,7 @@
                 <p>Please sign in to continue</p>
             </div>
             
-            <form class="login-form" id="loginForm" novalidate>
+            <form action="{{ url_for('login') }}" method="post" class="login-form" id="loginForm" novalidate>
                 <div class="form-group">
                     <div class="input-group neu-input">
                         <input type="email" id="email" name="email" required autocomplete="email" placeholder=" ">
@@ -61,20 +61,7 @@
                     <span class="error-message" id="passwordError"></span>
                 </div>
 
-                <div class="form-options">
-                    <div class="remember-wrapper">
-                        <input type="checkbox" id="remember" name="remember">
-                        <label for="remember" class="checkbox-label">
-                            <div class="neu-checkbox">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                    <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                            </div>
-                            Remember me
-                        </label>
-                    </div>
-                    <a href="#" class="forgot-link">Forgot password?</a>
-                </div>
+
 
                 <button type="submit" class="neu-button login-btn">
                     <span class="btn-text">Sign In</span>
@@ -85,7 +72,7 @@
             </form>
 
             <div class="signup-link">
-                <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+                <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
             </div>
 
             <div class="success-message" id="successMessage">
@@ -99,8 +86,5 @@
             </div>
         </div>
     </div>
-
-    <script src="../../shared/js/form-utils.js"></script>
-    <script src="login_script.js"></script>
 </body>
 </html>

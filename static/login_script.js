@@ -199,7 +199,7 @@ class NeumorphismLoginForm {
             await new Promise(resolve => setTimeout(resolve, 2000));
             
             // Show neumorphic success
-            this.showNeumorphicSuccess();
+            //this.showNeumorphicSuccess();
         } catch (error) {
             this.showError('password', 'Login failed. Please try again.');
         } finally {

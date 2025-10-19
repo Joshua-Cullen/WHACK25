@@ -128,6 +128,14 @@ body {
     font-weight: 500;
     outline: none;
     transition: all 0.3s ease;
+    -webkit-text-security-button: none;
+}
+
+/* Remove default password reveal button */
+.neu-input input[type="password"]::-ms-reveal,
+.neu-input input[type="password"]::-ms-clear,
+.neu-input input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
 }
 
 .neu-input input::placeholder {
@@ -177,27 +185,29 @@ body {
 /* Password Toggle */
 .password-group {
     padding-right: 50px;
+    position: relative;
 }
 
 .neu-toggle {
     position: absolute;
     right: 15px;
+    height: 35px;
+    width: 35px;
+    margin-top: -17.5px;
     top: 50%;
-    transform: translateY(-50%);
     background: #e0e5ec;
     border: none;
-    width: 35px;
-    height: 35px;
     border-radius: 10px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: #9499b7;
     box-shadow: 
         4px 4px 10px #bec3cf,
         -4px -4px 10px #ffffff;
-    transition: all 0.3s ease;
+    padding: 0;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .neu-toggle:hover {
@@ -213,6 +223,9 @@ body {
 .neu-toggle svg {
     width: 18px;
     height: 18px;
+    position: absolute;
+    left: 8.5px;
+    top: 8.5px;
 }
 
 .eye-closed {
