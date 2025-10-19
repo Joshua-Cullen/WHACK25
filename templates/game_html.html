@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+          crossorigin="anonymous">
+          
     <style>
         * {
             margin: 0;
@@ -16,75 +22,173 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: white;
+            background: #f8f9fa;
             font-family: 'Arial', sans-serif;
-            color: white;
+            color: #333;
+            padding-top: 70px;
+            overflow-x: auto; 
+        }
+        
+        /* Navbar Styles (Unchanged) */
+        .navbar {
+            background-color: #001f3f !important;
+        }
+        
+        .navbar-brand {
+            font-size: 32px !important;
+            font-weight: 800 !important;
+            color: #fff !important;
+            text-decoration: none !important;
+            letter-spacing: 3px !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3) !important;
+            font-family: 'Arial', sans-serif !important;
+            cursor: pointer !important;
         }
 
         .container {
             text-align: center;
+            min-width: 1525px;
         }
 
         h1 {
             margin-bottom: 20px;
-            color: black;
+            color: #001f3f;
             font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: none;
         }
 
         .game-wrapper {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             align-items: flex-start;
             justify-content: center;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            max-width: 1525px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .legend-panel {
+            min-width: 350px;
+            height: 577px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            color: #333;
+            font-size: 0.85em;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+            overflow-y: auto;
+        }
+
+        .legend-panel h4 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #001f3f;
+            text-transform: uppercase;
+        }
+
+        .legend-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .legend-panel th,
+        .legend-panel td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        
+        .legend-panel tr:last-child td {
+            border-bottom: none;
+        }
+
+        .legend-panel th {
+            background-color: #f8f9fa;
+        }
+
+        .legend-panel td:nth-child(2), /* Symbol */
+        .legend-panel th:nth-child(2) {
+            text-align: center;
+        }
+        
+        .legend-panel td:nth-child(3), /* Effect */
+        .legend-panel th:nth-child(3) {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .legend-panel tbody tr:nth-child(-n+4) td:nth-child(3) {
+             color: #4ade80; 
+        }
+        
+        .legend-panel tbody tr:nth-child(n+5) {
+            color: #e53e3e;
+        }
+        
+        .legend-panel tbody tr:nth-child(n+5) td:nth-child(3) {
+             color: #e53e3e;
+        }
+
+        .legend-panel em {
+            font-style: normal;
+            font-weight: 500;
         }
 
         canvas {
-            aspect-ratio: 1;
-            border: 4px solid white;
+            aspect-ratio: auto;
+            width: 900px;
+            height: 575px;
+            border: 1px solid #ddd;
             border-radius: 10px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
             display: block;
         }
 
         .info-panel {
-            background: #001f3f;
-            /*backdrop-filter: blur(10px);*/
+            min-width: 200px;
+            height: 577px;
+            background: #fff;
             padding: 30px;
             border-radius: 10px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            min-width: 200px;
-            color: white;
+            border: 1px solid #ddd;
+            color: #333;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
         }
 
         .score-display {
             font-size: 1.5em;
             margin-bottom: 20px;
             padding: 15px;
-            background: white;
+            background: #f8f9fa;
+            border: 1px solid #eee;
             border-radius: 8px;
-            color: black;
+            color: #333;
         }
 
         .score-label {
             font-size: 0.8em;
-            opacity: 0.8;
+            opacity: 1;
+            color: #555;
             text-transform: uppercase;
         }
 
         .score-value {
             font-size: 2em;
             font-weight: bold;
-            color: #4ade80;
+            color: #22c55e;
         }
 
         .high-score {
             margin-bottom: 20px;
             padding: 15px;
-            background: white;
-            color: black;
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #eee;
             border-radius: 8px;
         }
 
@@ -97,11 +201,12 @@
         .controls {
             margin-top: 30px;
             font-size: 0.9em;
-            opacity: 0.9;
+            opacity: 1;
         }
 
         .controls p {
             margin-bottom: 8px;
+            color: #555;
         }
 
         .button-group {
@@ -150,19 +255,23 @@
             transform: translateY(0);
         }
 
+        /* UPDATED: Minimal Modal Styles */
         .game-over {
             display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: #fff;
             padding: 40px;
             border-radius: 15px;
-            border: 3px solid #f87171;
+            border: 1px solid #eee;
+            border-top: 4px solid #ef4444; /* Red top border */
             z-index: 1000;
             text-align: center;
             animation: slideIn 0.3s ease;
+            color: #333;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); /* Softer shadow */
         }
 
         .credit-info {
@@ -171,14 +280,26 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: #fff;
             padding: 40px;
             border-radius: 15px;
-            border: 3px solid red;
+            border: 1px solid #eee; /* Light default border */
+            border-top: 4px solid #ddd; /* Default top border */
             z-index: 1000;
             text-align: center;
             animation: slideIn 0.3s ease;
+            color: #333;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); /* Softer shadow */
         }
+
+        /* NEW: Classes to control credit modal border color */
+        .credit-info.modal-good {
+            border-top-color: #22c55e;
+        }
+        .credit-info.modal-bad {
+            border-top-color: #ef4444;
+        }
+
 
         @keyframes slideIn {
             from {
@@ -200,38 +321,80 @@
         }
 
         .game-over h2 {
-            font-size: 2.5em;
+            font-size: 2.2em; /* UPDATED */
             margin-bottom: 20px;
             color: #f87171;
         }
 
         .game-over p {
-            font-size: 1.2em;
+            font-size: 1.3em; /* UPDATED */
             margin-bottom: 30px;
-            color: #fbbf24;
+            color: #333; /* UPDATED */
         }
 
         .game-over button {
             margin-top: 20px;
         }
 
+
         @media (max-width: 900px) {
-            .game-wrapper {
-                flex-direction: column;
-                align-items: center;
-            }
-            
             h1 {
                 font-size: 2em;
             }
         }
 
+        @media (max-width: 700px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .container {
+                padding: 0 2vw;
+            }
+            .score-display, .high-score {
+                padding: 8px;
+                font-size: 1em;
+            }
+            .controls, .button-group {
+                font-size: 0.9em;
+            }
+        }
+
         .creditInfoDetail {
-            color: white;
+            color: #555;
         }
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">JAK</a>
+        
+        <button class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" 
+                aria-expanded="false" 
+                aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">element1</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">element2</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">element3</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
     <div style="display:none;">
         <img id="carLoans" src="{{ url_for('static', filename='icons/carLoans.png') }}">
         <img id="debtPayoff" src="{{ url_for('static', filename='icons/debtPayoff.png') }}">
@@ -244,10 +407,87 @@
     </div>
 
     <div class="container">
-        <h1>SNAKE GAME</h1>
         <div class="game-wrapper">
-            <canvas id="gameCanvas" width="400" height="400"></canvas>
-            <div class="info-panel">
+
+            <div class="legend-panel">
+                <h4>Game Legend</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Symbol</th>
+                            <th>Effect</th>
+                            <th>Lesson</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>✅ <em>On-time Payment</em></td>
+                            <td>💵</td>
+                            <td>+20 points</td>
+                            <td>Paying on time improves credit</td>
+                        </tr>
+                        <tr>
+                            <td>💳 <em>Low Credit Utilisation</em></td>
+                            <td>💼</td>
+                            <td>+15 points</td>
+                            <td>Keeping card balance low helps score</td>
+                        </tr>
+                        <tr>
+                            <td>🚗 <em>Car Loan Payment</em></td>
+                            <td>🚙</td>
+                            <td>+10 points</td>
+                            <td>Paying off installment loans helps credit mix</td>
+                        </tr>
+                        <tr>
+                            <td>🧾 <em>Debt Payoff</em></td>
+                            <td>📜</td>
+                            <td>+25 points</td>
+                            <td>Paying off balances boosts credit</td>
+                        </tr>
+                        <tr>
+                            <td>🕒 <em>Missed Payment</em></td>
+                            <td>⏰</td>
+                            <td>−30 points</td>
+                            <td>Late payments hurt credit</td>
+                        </tr>
+                        <tr>
+                            <td>📉 <em>Maxed-Out Card</em></td>
+                            <td>🔥</td>
+                            <td>−25 points</td>
+                            <td>Using too much credit lowers your score</td>
+                        </tr>
+                        <tr>
+                            <td>🏦 <em>New Credit Inquiry</em></td>
+                            <td>🏦</td>
+                            <td>−10 points</td>
+                            <td>Too many new applications can hurt</td>
+                        </tr>
+                        <tr>
+                            <td>💔 <em>Default</em></td>
+                            <td>💣</td>
+                            <td>−50 points</td>
+                            <td>Defaulting ruins your score (instant&nbsp;penalty)</td>
+                        </tr>
+                        <tr>
+                            <td>✅ <em>On-time Payment</em></td>
+                            <td>💵</td>
+                            <td>+20 points</td>
+                            <td>Paying on time improves credit</td>
+                        </tr>
+                        <tr>
+                            <td>💳 <em>Low Credit Utilization</em></td>
+                            <td>💼</td>
+                            <td>+15 points</td>
+                            <td>Keeping card balance low helps score</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <canvas id="gameCanvas" width="900" height="575"></canvas>
+            
+            <div class="info-panel" style="height:577px;">
                 <div class="score-display">
                     <div class="score-label">Score</div>
                     <div class="score-value" id="score">0</div>
@@ -294,7 +534,8 @@
         const creditInfoModal = document.getElementById("creditInfoModal");
 
         const gridSize = 20;
-        const tileCount = canvas.width / gridSize;
+        const tileCountX = canvas.width / gridSize;
+        const tileCountY = canvas.height / gridSize;
 
         let snake = [{x: 10, y: 10}];
         let food = [];
@@ -344,8 +585,8 @@
             }
 
             let newFood = {
-                x: Math.floor(Math.random() * tileCount),
-                y: Math.floor(Math.random() * tileCount),
+                x: Math.floor(Math.random() * tileCountX),
+                y: Math.floor(Math.random() * tileCountY),
                 foodType: newFoodType
             };
             for (let segment of snake) {
@@ -369,7 +610,7 @@
             direction = nextDirection;
             const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
 
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+            if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
                 endGame();
                 return;
             }
@@ -397,7 +638,9 @@
                             discoveredFood.push("carLoans");
                             document.getElementById("creditInfoTitle").textContent = "Car Loans";
                             document.getElementById("creditInfoDetail").textContent = "Taking out a car loan and making timely payments can positively impact your credit score by demonstrating responsible credit behavior.";
-                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-bad");
+                            creditInfoModal.classList.add("modal-good");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -410,7 +653,9 @@
                             discoveredFood.push("lowCreditUtilisation");
                             document.getElementById("creditInfoTitle").textContent = "Low Credit Utilization";
                             document.getElementById("creditInfoDetail").textContent = "Maintaining a low credit utilization ratio (the amount of credit you're using compared to your total available credit) can boost your credit score.";
-                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-bad");
+                            creditInfoModal.classList.add("modal-good");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -423,7 +668,9 @@
                             discoveredFood.push("onTimePayment");
                             document.getElementById("creditInfoTitle").textContent = "On-Time Payments";
                             document.getElementById("creditInfoDetail").textContent = "Making payments on time is one of the most important factors in maintaining a good credit score. It shows lenders that you are reliable and responsible.";
-                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-bad");
+                            creditInfoModal.classList.add("modal-good");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -436,7 +683,9 @@
                             discoveredFood.push("debtPayoff");
                             document.getElementById("creditInfoTitle").textContent = "Debt Payoff";
                             document.getElementById("creditInfoDetail").textContent = "Paying off existing debt can improve your credit score by reducing your overall debt burden and improving your credit utilization ratio.";
-                            document.getElementById("creditInfoModal").style.borderColor = "green";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-bad");
+                            creditInfoModal.classList.add("modal-good");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -449,7 +698,9 @@
                             discoveredFood.push("missedPayment");
                             document.getElementById("creditInfoTitle").textContent = "Missed Payment";
                             document.getElementById("creditInfoDetail").textContent = "Missing a payment can significantly harm your credit score, as it indicates to lenders that you may be unreliable in repaying debts.";
-                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-good");
+                            creditInfoModal.classList.add("modal-bad");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -462,7 +713,9 @@
                             discoveredFood.push("highCreditUtilisation");
                             document.getElementById("creditInfoTitle").textContent = "High Credit Utilization";
                             document.getElementById("creditInfoDetail").textContent = "Having a high credit utilization ratio can negatively impact your credit score, as it suggests that you may be over-reliant on credit and could be at risk of defaulting on payments.";
-                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-good");
+                            creditInfoModal.classList.add("modal-bad");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }  
@@ -475,7 +728,9 @@
                             discoveredFood.push("default");
                             document.getElementById("creditInfoTitle").textContent = "Loan Default";
                             document.getElementById("creditInfoDetail").textContent = "Defaulting on a loan can severely damage your credit score, as it indicates to lenders that you are unable to meet your debt obligations.";
-                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-good");
+                            creditInfoModal.classList.add("modal-bad");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -488,7 +743,9 @@
                             discoveredFood.push("newCredit");
                             document.getElementById("creditInfoTitle").textContent = "New Credit Inquiries";
                             document.getElementById("creditInfoDetail").textContent = "Applying for new credit can result in hard inquiries on your credit report, which may temporarily lower your credit score.";
-                            document.getElementById("creditInfoModal").style.borderColor = "red";
+                            // UPDATED: Use classList
+                            creditInfoModal.classList.remove("modal-good");
+                            creditInfoModal.classList.add("modal-bad");
                             creditInfoModal.classList.add("show");
                             gamePaused = !gamePaused;
                         }
@@ -503,12 +760,12 @@
         }
 
         function draw() {
-            ctx.fillStyle = '#0f172a';
+            ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = '#fbbf24';
             ctx.shadowColor = 'rgba(251, 191, 36, 0.6)';
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 0;
             let image;
             console.log(food);
             for (let foodItem of food) {
@@ -551,7 +808,7 @@
 
             ctx.fillStyle = '#4ade80';
             ctx.shadowColor = 'rgba(74, 222, 128, 0.4)';
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 0;
             for (let i = 0; i < snake.length; i++) {
                 const segment = snake[i];
                 const opacity = 1 - (i / snake.length) * 0.3;
@@ -640,8 +897,11 @@
             }, 2000);
         }
 
+        // UPDATED: Reset modal classes on resume
         function resume() {
             creditInfoModal.classList.remove("show");
+            creditInfoModal.classList.remove("modal-good");
+            creditInfoModal.classList.remove("modal-bad");
             gamePaused = !gamePaused;
         }
 
@@ -662,5 +922,9 @@
         generateFood();
         draw();
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+            crossorigin="anonymous"></script>
 </body>
 </html>
