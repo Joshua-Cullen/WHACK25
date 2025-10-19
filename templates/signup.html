@@ -133,6 +133,14 @@
             font-weight: 500;
             outline: none;
             transition: all 0.3s ease;
+            -webkit-text-security-button: none;
+        }
+
+        /* Remove default password reveal button */
+        .neu-input input[type="password"]::-ms-reveal,
+        .neu-input input[type="password"]::-ms-clear,
+        .neu-input input[type="password"]::-webkit-credentials-auto-fill-button {
+            display: none !important;
         }
 
         .neu-input input::placeholder {
@@ -453,7 +461,7 @@
                 <p>Sign up to get started</p>
             </div>
             
-            <form class="signup-form" id="signupForm" novalidate>
+            <form method="post" action="{{ url_for('signup') }}" class="signup-form" id="signupForm" novalidate>
                 <div class="form-group">
                     <div class="input-group neu-input">
                         <input type="text" id="name" name="name" required autocomplete="name" placeholder=" ">
@@ -515,7 +523,7 @@
             </form>
 
             <div class="login-link">
-                <p>Already have an account? <a href="login_index.html">Log in</a></p>
+                <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
             </div>
 
             <div class="success-message" id="successMessage">
@@ -529,254 +537,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // Neumorphism Signup Form JavaScript
-        class NeumorphismSignupForm {
-            constructor() {
-                this.form = document.getElementById('signupForm');
-                this.nameInput = document.getElementById('name');
-                this.emailInput = document.getElementById('email');
-                this.passwordInput = document.getElementById('password');
-                this.passwordToggle = document.getElementById('passwordToggle');
-                this.submitButton = this.form.querySelector('.signup-btn');
-                this.successMessage = document.getElementById('successMessage');
-                
-                this.init();
-            }
-            
-            init() {
-                this.bindEvents();
-                this.setupPasswordToggle();
-                this.setupNeumorphicEffects();
-            }
-            
-            bindEvents() {
-                this.form.addEventListener('submit', (e) => this.handleSubmit(e));
-                this.nameInput.addEventListener('blur', () => this.validateName());
-                this.emailInput.addEventListener('blur', () => this.validateEmail());
-                this.passwordInput.addEventListener('blur', () => this.validatePassword());
-                this.nameInput.addEventListener('input', () => this.clearError('name'));
-                this.emailInput.addEventListener('input', () => this.clearError('email'));
-                this.passwordInput.addEventListener('input', () => this.clearError('password'));
-                
-                // Add soft press effects to inputs
-                [this.nameInput, this.emailInput, this.passwordInput].forEach(input => {
-                    input.addEventListener('focus', (e) => this.addSoftPress(e));
-                    input.addEventListener('blur', (e) => this.removeSoftPress(e));
-                });
-            }
-            
-            setupPasswordToggle() {
-                this.passwordToggle.addEventListener('click', () => {
-                    const type = this.passwordInput.type === 'password' ? 'text' : 'password';
-                    this.passwordInput.type = type;
-                    
-                    this.passwordToggle.classList.toggle('show-password', type === 'text');
-                    
-                    // Add soft click animation
-                    this.animateSoftPress(this.passwordToggle);
-                });
-            }
-            
-            setupNeumorphicEffects() {
-                // Add hover effects to all neumorphic elements
-                const neuElements = document.querySelectorAll('.neu-icon');
-                neuElements.forEach(element => {
-                    element.addEventListener('mouseenter', () => {
-                        element.style.transform = 'scale(1.05)';
-                    });
-                    
-                    element.addEventListener('mouseleave', () => {
-                        element.style.transform = 'scale(1)';
-                    });
-                });
-                
-                // Add ambient light effect on mouse move
-                document.addEventListener('mousemove', (e) => {
-                    this.updateAmbientLight(e);
-                });
-            }
-            
-            updateAmbientLight(e) {
-                const card = document.querySelector('.signup-card');
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                const angleX = (x - centerX) / centerX;
-                const angleY = (y - centerY) / centerY;
-                
-                const shadowX = angleX * 30;
-                const shadowY = angleY * 30;
-                
-                card.style.boxShadow = `
-                    ${shadowX}px ${shadowY}px 60px #bec3cf,
-                    ${-shadowX}px ${-shadowY}px 60px #ffffff
-                `;
-            }
-            
-            addSoftPress(e) {
-                const inputGroup = e.target.closest('.neu-input');
-                inputGroup.style.transform = 'scale(0.98)';
-            }
-            
-            removeSoftPress(e) {
-                const inputGroup = e.target.closest('.neu-input');
-                inputGroup.style.transform = 'scale(1)';
-            }
-            
-            animateSoftPress(element) {
-                element.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    element.style.transform = 'scale(1)';
-                }, 150);
-            }
-            
-            validateName() {
-                const name = this.nameInput.value.trim();
-                
-                if (!name) {
-                    this.showError('name', 'Name is required');
-                    return false;
-                }
-                
-                if (name.length < 2) {
-                    this.showError('name', 'Name must be at least 2 characters');
-                    return false;
-                }
-                
-                this.clearError('name');
-                return true;
-            }
-            
-            validateEmail() {
-                const email = this.emailInput.value.trim();
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                
-                if (!email) {
-                    this.showError('email', 'Email is required');
-                    return false;
-                }
-                
-                if (!emailRegex.test(email)) {
-                    this.showError('email', 'Please enter a valid email');
-                    return false;
-                }
-                
-                this.clearError('email');
-                return true;
-            }
-            
-            validatePassword() {
-                const password = this.passwordInput.value;
-                
-                if (!password) {
-                    this.showError('password', 'Password is required');
-                    return false;
-                }
-                
-                if (password.length < 8) {
-                    this.showError('password', 'Password must be at least 8 characters');
-                    return false;
-                }
-                
-                this.clearError('password');
-                return true;
-            }
-            
-            showError(field, message) {
-                const formGroup = document.getElementById(field).closest('.form-group');
-                const errorElement = document.getElementById(`${field}Error`);
-                
-                formGroup.classList.add('error');
-                errorElement.textContent = message;
-                errorElement.classList.add('show');
-                
-                // Add gentle shake animation
-                const input = document.getElementById(field);
-                input.style.animation = 'gentleShake 0.5s ease-in-out';
-                setTimeout(() => {
-                    input.style.animation = '';
-                }, 500);
-            }
-            
-            clearError(field) {
-                const formGroup = document.getElementById(field).closest('.form-group');
-                const errorElement = document.getElementById(`${field}Error`);
-                
-                formGroup.classList.remove('error');
-                errorElement.classList.remove('show');
-                setTimeout(() => {
-                    errorElement.textContent = '';
-                }, 300);
-            }
-            
-            async handleSubmit(e) {
-                e.preventDefault();
-                
-                const isNameValid = this.validateName();
-                const isEmailValid = this.validateEmail();
-                const isPasswordValid = this.validatePassword();
-                
-                if (!isNameValid || !isEmailValid || !isPasswordValid) {
-                    this.animateSoftPress(this.submitButton);
-                    return;
-                }
-                
-                this.setLoading(true);
-                
-                try {
-                    // Simulate account creation
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    // Show neumorphic success
-                    this.showNeumorphicSuccess();
-                } catch (error) {
-                    this.showError('password', 'Signup failed. Please try again.');
-                } finally {
-                    this.setLoading(false);
-                }
-            }
-            
-            setLoading(loading) {
-                this.submitButton.classList.toggle('loading', loading);
-                this.submitButton.disabled = loading;
-            }
-            
-            showNeumorphicSuccess() {
-                // Soft fade out form
-                this.form.style.transform = 'scale(0.95)';
-                this.form.style.opacity = '0';
-                
-                setTimeout(() => {
-                    this.form.style.display = 'none';
-                    document.querySelector('.login-link').style.display = 'none';
-                    
-                    // Show success with soft animation
-                    this.successMessage.classList.add('show');
-                    
-                    // Animate success icon
-                    const successIcon = this.successMessage.querySelector('.neu-icon');
-                    successIcon.style.animation = 'successPulse 0.6s ease-out';
-                    
-                }, 300);
-                
-                // Simulate redirect
-                setTimeout(() => {
-                    console.log('Redirecting to dashboard...');
-                    // window.location.href = '/dashboard';
-                }, 2500);
-            }
-        }
-
-        // Initialize the form when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            new NeumorphismSignupForm();
-        });
-    </script>
 </body>
 </html>
