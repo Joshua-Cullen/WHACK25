@@ -313,7 +313,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item ms-2">
-                        <a href="/login" class="btn btn-nav">Sign In</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-nav">Sign In</a>
                     </li>
                 </ul>
             </div>
@@ -343,19 +343,19 @@
                 <p>Three powerful features to build your financial confidence</p>
             </div>
             <div class="main-features-grid">
-                <a href="/game" class="main-feature-box">
+                <a href="{{ url_for('game')}}" class="main-feature-box">
                     <span class="main-feature-icon">🎮</span>
                     <h3>Credit Score Game</h3>
                     <p>Learn about credit through an interactive snake game that teaches financial decisions</p>
                 </a>
 
-                <a href="/cash-flow" class="main-feature-box">
+                <a href="{{ url_for('cashflow')}}" class="main-feature-box">
                     <span class="main-feature-icon">💰</span>
                     <h3>Cash Flow Manager</h3>
                     <p>Track income and expenses with visual analytics and insights</p>
                 </a>
 
-                <a href="/upload" class="main-feature-box">
+                <a href="{{ url_for('contractconsultant')}}" class="main-feature-box">
                     <span class="main-feature-icon">📄</span>
                     <h3>Contract Consultant</h3>
                     <p>AI-powered contract analysis to understand terms and fairness</p>

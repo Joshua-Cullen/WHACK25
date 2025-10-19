@@ -7,12 +7,12 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template("game_html.html")
+    return render_template("home_index.html")
 
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "GET":
-        return render_template("login_html.html")
+        return render_template("login_index.html")
     elif request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -68,6 +68,28 @@ def submit():
     response = json.loads(response)
 
     return render_template("display_html.html", response=response)
+
+@app.route("/game")
+def game():
+    return render_template("game_html.html")
+
+
+@app.route("/cashflow")
+def cashflow():
+    return render_template("cash-flow-tracker.html")
+
+
+@app.route("/contractconsultant")
+def contractconsultant():
+    return render_template("upload_html.html")
+
+@app.route("/home")
+def home():
+    return render_template("home_index.html")
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
