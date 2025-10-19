@@ -3,6 +3,7 @@ from gemini import queryGemini
 from werkzeug.utils import secure_filename
 import json
 import sqlite3
+from pdfHighlighting import highlight_pdf
 
 app = Flask(__name__)
 app.secret_key = "replace-this-with-a-secure-random-key"
@@ -76,8 +77,24 @@ def submit():
     response = queryGemini(filename)
     response = json.loads(response)
 
+    # If the LLM returned part_5 (quotes to highlight), run the highlighter
+    highlighted_filename = None
+    try:
+        phrases = response.get("part_5") or response.get("part_4") or []
+        # part_5 should be a list of exact quotes to highlight
+        if isinstance(phrases, list) and phrases:
+            highlighted_filename = f"highlighted_{filename}"
+            highlighted_path = f"uploads/{highlighted_filename}"
+            # call the reusable highlighting function
+            highlight_pdf(save_path, highlighted_path, phrases)
+    except Exception as e:
+        # don't break the user flow if highlighting fails; log to console
+        print("Highlighting failed:", e)
+
     # pass the filename to the template so url_for('uploaded_file', filename=...) works
-    return render_template("display_html.html", response=response, pdf_filename=filename)
+    # prefer to show the highlighted file when available
+    pdf_to_show = highlighted_filename or filename
+    return render_template("display_html.html", response=response, pdf_filename=pdf_to_show)
 
 
 @app.route('/uploads/<path:filename>')
@@ -109,7 +126,6 @@ def home(username=None):
 def logout():
     session.clear()
     return redirect(url_for('index'))
-
 
 
 
