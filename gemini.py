@@ -9,7 +9,7 @@ class ContractExplanation(BaseModel):
     part_4: list[str]
     part_5: list[str]
 
-client = genai.Client(api_key="AIzaSyC8rpK8DaqsITXBe7PAydG0mzBUvrB96kg")
+client = genai.Client(api_key="AIzaSyCTUM-7FMBPmM2qBOibqbdrQILcI7H-N7I")
 
 def queryGemini(filename):
     # Retrieve and encode the PDF byte

@@ -312,9 +312,15 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
+                    {% if session.get('user_id') %}
+                    <li class="nav-item ms-2">
+                        <a href="{{ url_for('logout') }}" class="btn btn-nav">Sign Out</a>
+                    </li>
+                    {% else %}
                     <li class="nav-item ms-2">
                         <a href="{{ url_for('login') }}" class="btn btn-nav">Sign In</a>
                     </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -364,7 +370,7 @@
         </div>
     </section>
 
-    <!-- Stats Section -->
+    <!-- Stats Section
     <section class="stats">
         <div class="container">
             <div class="row">
@@ -388,7 +394,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> -->
 
     <!-- CTA Section -->
     <section class="cta">

@@ -19,8 +19,8 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #001f3f;">
       <div class="container-fluid">
-        
-        <a class="navbar-brand" href="upload_html.html" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; cursor: pointer;">
+
+        <a class="navbar-brand" href="{{ url_for('home') }}" style="font-size: 32px; font-weight: 800; color: #fff; text-decoration: none; letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); font-family: 'Arial', sans-serif; cursor: pointer;">
             JAK
         </a>
         
@@ -38,15 +38,15 @@
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">element1</a>
+              <a class="nav-link active" aria-current="page" href="{{ url_for('game') }}">Credit Game</a>
             </li>
             
             <li class="nav-item">
-              <a class="nav-link" href="#">element2</a>
+              <a class="nav-link" href="{{ url_for('cashflow') }}">Cash Flow</a>
             </li>
             
             <li class="nav-item">
-              <a class="nav-link" href="#">element3</a>
+              <a class="nav-link" href="{{ url_for('contractconsultant') }}">Contract Consultant</a>
             </li>
             
           </ul>
