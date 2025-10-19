@@ -8,6 +8,12 @@ from pdfHighlighting import highlight_pdf
 app = Flask(__name__)
 app.secret_key = "replace-this-with-a-secure-random-key"
 
+# Context processor to make request available in templates
+@app.context_processor
+def inject_request():
+    return dict(request=request)
+
+
 @app.route('/')
 def index():
     return render_template("home_index.html")
