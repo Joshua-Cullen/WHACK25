@@ -1,0 +1,76 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f6fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.game-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+.instructions {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+#score {
+  font-size: 18px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+#scenarioBox p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.buttons button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.buttons button:hover {
+  background-color: #0056b3;
+}
+
+#feedback {
+  margin-top: 15px;
+  font-size: 16px;
+  min-height: 40px;
+}
+
+#nextBtn {
+  margin-top: 20px;
+  padding: 10px 15px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  display: none;
+}
+
+#nextBtn:hover {
+  background-color: #218838;
+}
