@@ -41,20 +41,7 @@ These components are stitched together in a single app repository that contains 
 
 ## Key features (expanded)
 
-### 1) Snake — gamified credit education
-
-* Collect `positive` items that increase a simulated credit score and show a short educational pop-up explaining the credit principle.
-* Collecting `negative` items reduces the score and shows corrective guidance.
-* Purpose: teach cause-and-effect (e.g., on-time payments, credit utilisation, missed payments).
-
-### 2) Financial tracker
-
-* Create, edit, and delete income & expense entries.
-* Table view with currency and timestamp information.
-* Chart visualisations (time-series / pie / bar) to present spending vs income.
-* Filtering controls to focus the view on date ranges or categories.
-
-### 3) Contract analysis (LLM-driven)
+### 1) Contract analysis (LLM-driven)
 
 * Upload PDF contracts.
 * The LLM (project uses *Gemini 2.5 Pro* via an integration module) analyses the contract and:
@@ -63,6 +50,20 @@ These components are stitched together in a single app repository that contains 
   * Lists a prioritized set of issues and recommended changes.
   * Highlights clauses in the PDF that are unfavourable or require attention.
 * This feature is intended to act as a *consultant-style assistant* rather than a legally binding opinion; results should encourage professional legal review for high-risk contracts.
+
+### 2) Snake — gamified credit education
+
+* Collect `positive` items that increase a simulated credit score and show a short educational pop-up explaining the credit principle.
+* Collecting `negative` items reduces the score and shows corrective guidance.
+* Purpose: teach cause-and-effect (e.g., on-time payments, credit utilisation, missed payments).
+
+### 3) Financial tracker
+
+* Create, edit, and delete income & expense entries.
+* Table view with currency and timestamp information.
+* Chart visualisations (time-series / pie / bar) to present spending vs income.
+* Filtering controls to focus the view on date ranges or categories.
+
 
 ---
 
