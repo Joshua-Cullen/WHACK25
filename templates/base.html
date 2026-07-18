@@ -45,6 +45,9 @@
               <a class="nav-link {% if request.endpoint == 'contractconsultant' %}active{% endif %}" 
                  href="{{ url_for('contractconsultant') }}">Contract Consultant</a>
             </li>
+            <li class="nav-item">
+              <a class="navlink {% if request.endpoint == 'quiz' %}active{% endif %}"
+                 href="{{ url_for('quiz') }}">Credit Quiz</a>
           </ul>
         </div>
       </div>
