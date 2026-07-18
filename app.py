@@ -16,12 +16,13 @@ def inject_request():
 
 @app.route('/')
 def index():
-    return render_template("home_index.html")
+    return render_template("index.html")
+
 
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "GET":
-        return render_template("login_index.html")
+        return render_template("login.html")
     elif request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -44,7 +45,7 @@ def login():
             return redirect(url_for('home', username=userId))
         else:
             # On failure, re-render the login page with a message instead of silent redirect.
-            return render_template('login_index.html', error='Invalid credentials')
+            return render_template('login.html', error='Invalid credentials')
 
 @app.route("/signup", methods=["GET","POST"])
 def signup():
@@ -65,10 +66,10 @@ def signup():
 
         return redirect(url_for('login'))
 
+
 @app.route("/dashboard_html.html/<username>")
 def dashboard(username):
-    return render_template("dashboard_html.html", username=username)
-
+    return render_template("dashboard.html", username=username)
 
 
 @app.route("/submit", methods=["POST"])
@@ -100,7 +101,7 @@ def submit():
     # pass the filename to the template so url_for('uploaded_file', filename=...) works
     # prefer to show the highlighted file when available
     pdf_to_show = highlighted_filename or filename
-    return render_template("display_html.html", response=response, pdf_filename=pdf_to_show)
+    return render_template("display.html", response=response, pdf_filename=pdf_to_show)
 
 
 @app.route('/uploads/<path:filename>')
@@ -108,9 +109,15 @@ def uploaded_file(filename):
     # serve files from the uploads directory
     return send_from_directory('uploads', filename)
 
+
+@app.route("/quiz")
+def quiz():
+    return render_template("quiz.html")
+
+
 @app.route("/game")
 def game():
-    return render_template("game_html.html")
+    return render_template("game.html")
 
 
 @app.route("/cashflow")
@@ -120,20 +127,20 @@ def cashflow():
 
 @app.route("/contractconsultant")
 def contractconsultant():
-    return render_template("upload_html.html")
+    return render_template("upload.html")
+
+
 @app.route('/home/')
 @app.route('/home/<username>')
 def home(username=None):
     # username may be None when url_for('home') is used without values
-    return render_template("home_index.html", username=username)
+    return render_template("index.html", username=username)
 
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('index'))
-
-
 
 
 if __name__ == "__main__":
