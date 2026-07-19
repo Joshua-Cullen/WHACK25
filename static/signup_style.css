@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #e0e5ec;
@@ -16,12 +15,12 @@ body {
     line-height: 1.6;
 }
 
-.login-container {
+.signup-container {
     width: 100%;
     max-width: 420px;
 }
 
-.login-card {
+.signup-card {
     background: #e0e5ec;
     border-radius: 30px;
     padding: 50px 40px;
@@ -32,11 +31,11 @@ body {
     transition: all 0.3s ease;
 }
 
-.login-card:hover {
+.signup-card:hover {
     transform: translateY(-5px);
 }
 
-.login-header {
+.signup-header {
     text-align: center;
     margin-bottom: 40px;
 }
@@ -80,14 +79,14 @@ body {
     height: 100%;
 }
 
-.login-header h2 {
+.signup-header h2 {
     color: #3d4468;
     font-size: 2rem;
     font-weight: 600;
     margin-bottom: 8px;
 }
 
-.login-header p {
+.signup-header p {
     color: #9499b7;
     font-size: 15px;
     font-weight: 400;
@@ -180,29 +179,27 @@ body {
 
 .password-group {
     padding-right: 50px;
-    position: relative;
 }
 
 .neu-toggle {
     position: absolute;
     right: 15px;
-    height: 35px;
-    width: 35px;
-    margin-top: -17.5px;
     top: 50%;
+    transform: translateY(-50%);
     background: #e0e5ec;
     border: none;
+    width: 35px;
+    height: 35px;
     border-radius: 10px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #9499b7;
     box-shadow:
         4px 4px 10px #bec3cf,
         -4px -4px 10px #ffffff;
-    padding: 0;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
+    transition: all 0.3s ease;
 }
 
 .neu-toggle:hover {
@@ -218,9 +215,6 @@ body {
 .neu-toggle svg {
     width: 18px;
     height: 18px;
-    position: absolute;
-    left: 8.5px;
-    top: 8.5px;
 }
 
 .eye-closed {
@@ -235,87 +229,9 @@ body {
     display: block;
 }
 
-.form-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 35px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.remember-wrapper {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-.remember-wrapper input[type="checkbox"] {
-    display: none;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
-    color: #6c7293;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.neu-checkbox {
-    width: 22px;
-    height: 22px;
-    background: #e0e5ec;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow:
-        3px 3px 8px #bec3cf,
-        -3px -3px 8px #ffffff;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.remember-wrapper input[type="checkbox"]:checked+.checkbox-label .neu-checkbox {
-    box-shadow:
-        inset 2px 2px 5px #bec3cf,
-        inset -2px -2px 5px #ffffff;
-}
-
-.neu-checkbox svg {
-    width: 14px;
-    height: 14px;
-    color: #00c896;
-    opacity: 0;
-    transform: scale(0);
-    transition: all 0.3s ease;
-}
-
-.remember-wrapper input[type="checkbox"]:checked+.checkbox-label .neu-checkbox svg {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.forgot-link {
-    color: #6c7293;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.forgot-link:hover {
-    color: #3d4468;
-}
-
 .neu-button {
     width: 100%;
-    background-color: #001f3f;
+    background: #001f3f;
     border: none;
     border-radius: 15px;
     padding: 18px 32px;
@@ -403,87 +319,23 @@ body {
     opacity: 1;
 }
 
-.divider {
-    display: flex;
-    align-items: center;
-    margin: 30px 0;
-    gap: 16px;
-}
-
-.divider-line {
-    flex: 1;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #bec3cf, transparent);
-}
-
-.divider span {
-    color: #9499b7;
-    font-size: 13px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.social-login {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin-bottom: 30px;
-}
-
-.neu-social {
-    width: 50px;
-    height: 50px;
-    background: #e0e5ec;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c7293;
-    box-shadow:
-        6px 6px 15px #bec3cf,
-        -6px -6px 15px #ffffff;
-    transition: all 0.3s ease;
-}
-
-.neu-social:hover {
-    transform: translateY(-2px);
-    box-shadow:
-        8px 8px 20px #bec3cf,
-        -8px -8px 20px #ffffff;
-}
-
-.neu-social:active {
-    transform: translateY(0);
-    box-shadow:
-        inset 3px 3px 8px #bec3cf,
-        inset -3px -3px 8px #ffffff;
-}
-
-.neu-social svg {
-    width: 22px;
-    height: 22px;
-}
-
-.signup-link {
+.login-link {
     text-align: center;
 }
 
-.signup-link p {
+.login-link p {
     color: #9499b7;
     font-size: 14px;
 }
 
-.signup-link a {
+.login-link a {
     color: #6c7293;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;
 }
 
-.signup-link a:hover {
+.login-link a:hover {
     color: #3d4468;
 }
 
@@ -542,17 +394,49 @@ body {
     font-size: 14px;
 }
 
+@keyframes gentleShake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-3px);
+    }
+
+    75% {
+        transform: translateX(3px);
+    }
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 @media (max-width: 480px) {
     body {
         padding: 16px;
     }
 
-    .login-card {
+    .signup-card {
         padding: 35px 25px;
         border-radius: 20px;
     }
 
-    .login-header h2 {
+    .signup-header h2 {
         font-size: 1.75rem;
     }
 
@@ -563,11 +447,5 @@ body {
 
     .neu-input label {
         left: 50px;
-    }
-
-    .form-options {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
     }
 }
