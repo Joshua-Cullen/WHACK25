@@ -83,6 +83,14 @@ body {
     background-color: #f8f9fa;
 }
 
+.positive-points {
+    color: green;
+}
+
+.negative-points {
+    color: red;
+}
+
 canvas {
     width: 900px;
     height: 575px;
