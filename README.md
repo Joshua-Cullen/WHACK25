@@ -743,7 +743,7 @@ You are welcome to use, modify and adapt the code for educational purposes in ac
 
 ---
 
-## Author
+## Authors
 
 Developed by **Josh B, Josh C, Aaron G, Kushal K**.
 
