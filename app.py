@@ -1,6 +1,5 @@
 import datetime
 import json
-import sqlite3
 
 from flask import (
     Flask,
@@ -14,10 +13,18 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 from gemini import queryGemini
+from models import GameScore, Money, QuizScore, User, db
 from pdfHighlighting import highlight_pdf
 
 app = Flask(__name__)
 app.secret_key = "replace-this-with-a-secure-random-key"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 
 @app.context_processor
@@ -38,21 +45,11 @@ def login():
         email = request.form["email"]
         password = request.form["password"]
 
-        conn = sqlite3.connect("database.db")
-        cursor = conn.cursor()
+        user = User.query.filter_by(email=email).first()
 
-        query = "SELECT password, user_id FROM users WHERE email = ?"
-        result = cursor.execute(query, (email,)).fetchall()
-        if result:
-            checkPassword, userId = result[0]
-        else:
-            checkPassword, userId = None, None
-        conn.commit()
-        conn.close()
-
-        if checkPassword == password:
-            session["user_id"] = userId
-            return redirect(url_for("home", username=userId))
+        if user is not None and user.password == password:
+            session["user_id"] = user.user_id
+            return redirect(url_for("home", username=user.user_id))
         else:
             return render_template("login.html", error="Invalid credentials")
 
@@ -66,19 +63,15 @@ def signup():
         email = request.form["email"]
         password = request.form["password"]
 
-        conn = sqlite3.connect("database.db")
-        cursor = conn.cursor()
-
-        try:
-            query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
-            cursor.execute(query, (username, email, password))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            conn.close()
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user is not None:
             return render_template(
                 "signup.html", error="An account with that email already exists"
             )
-        conn.close()
+
+        new_user = User(username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
 
         return redirect(url_for("login"))
 
@@ -174,25 +167,18 @@ def get_entries(username):
                 },
             ]
         )
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT money_id, date, description, amount, type FROM money WHERE user_id = ?",
-        (user_id,),
-    )
-    rows = cursor.fetchall()
-    conn.close()
-    entries = []
-    for row in rows:
-        entries.append(
-            {
-                "id": row[0],
-                "date": row[1],
-                "description": row[2],
-                "amount": row[3],
-                "type": row[4],
-            }
-        )
+
+    rows = Money.query.filter_by(user_id=user_id).all()
+    entries = [
+        {
+            "id": row.money_id,
+            "date": row.date.isoformat() if isinstance(row.date, (datetime.date, datetime.datetime)) else row.date,
+            "description": row.description,
+            "amount": row.amount,
+            "type": row.type,
+        }
+        for row in rows
+    ]
     return json.dumps(entries)
 
 
@@ -202,20 +188,27 @@ def add_entry():
     if not user_id:
         return json.dumps({"status": "unauthorized"}), 401
     data = request.json
-    date = data.get("date")
+    date_str = data.get("date")
     description = data.get("description")
     amount = float(data.get("amount", 0))
     entry_type = data.get("type")
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO money (user_id, date, description, amount, type) VALUES (?, ?, ?, ?, ?)",
-        (user_id, date, description, amount, entry_type),
+
+    try:
+        date = datetime.date.fromisoformat(date_str)
+    except (TypeError, ValueError):
+        return json.dumps({"status": "error", "message": "date must be in YYYY-MM-DD format"}), 400
+
+    new_entry = Money(
+        user_id=user_id,
+        date=date,
+        description=description,
+        amount=amount,
+        type=entry_type,
     )
-    conn.commit()
-    new_id = cursor.lastrowid
-    conn.close()
-    return json.dumps({"status": "success", "id": new_id})
+    db.session.add(new_entry)
+    db.session.commit()
+
+    return json.dumps({"status": "success", "id": new_entry.money_id})
 
 
 @app.route("/api/entries/<int:entry_id>", methods=["DELETE"])
@@ -223,13 +216,10 @@ def delete_entry(entry_id):
     user_id = session.get("user_id")
     if not user_id:
         return json.dumps({"status": "unauthorized"}), 401
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        "DELETE FROM money WHERE money_id = ? AND user_id = ?", (entry_id, user_id)
-    )
-    conn.commit()
-    conn.close()
+
+    Money.query.filter_by(money_id=entry_id, user_id=user_id).delete()
+    db.session.commit()
+
     return json.dumps({"status": "success"})
 
 
@@ -240,13 +230,11 @@ def save_quiz_score():
         return json.dumps({"status": "unauthorized"}), 401
     data = request.json
     score = int(data.get("score", 700))
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO quiz_scores (user_id, score) VALUES (?, ?)", (user_id, score)
-    )
-    conn.commit()
-    conn.close()
+
+    new_score = QuizScore(user_id=user_id, score=score)
+    db.session.add(new_score)
+    db.session.commit()
+
     return json.dumps({"status": "success"})
 
 
@@ -254,14 +242,49 @@ def save_quiz_score():
 def get_quiz_high_score():
     user_id = session.get("user_id")
     if not user_id:
-        return json.dumps({"high_score": 0})
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT MAX(score) FROM quiz_scores WHERE user_id = ?", (user_id,))
-    result = cursor.fetchone()
-    conn.close()
-    high_score = result[0] if result[0] is not None else 0
-    return json.dumps({"high_score": high_score})
+        return json.dumps({"high_score": 0, "logged_in": False})
+
+    high_score = (
+        db.session.query(db.func.max(QuizScore.score))
+        .filter(QuizScore.user_id == user_id)
+        .scalar()
+    )
+
+    return json.dumps(
+        {"high_score": high_score if high_score is not None else 0, "logged_in": True}
+    )
+
+
+@app.route("/api/snake", methods=["POST"])
+def save_snake_score():
+    user_id = session.get("user_id")
+    if not user_id:
+        return json.dumps({"status": "unauthorized"}), 401
+    data = request.json
+    score = int(data.get("score", 0))
+
+    new_score = GameScore(user_id=user_id, score=score)
+    db.session.add(new_score)
+    db.session.commit()
+
+    return json.dumps({"status": "success"})
+
+
+@app.route("/api/snake/high", methods=["GET"])
+def get_snake_high_score():
+    user_id = session.get("user_id")
+    if not user_id:
+        return json.dumps({"high_score": 0, "logged_in": False})
+
+    high_score = (
+        db.session.query(db.func.max(GameScore.score))
+        .filter(GameScore.user_id == user_id)
+        .scalar()
+    )
+
+    return json.dumps(
+        {"high_score": high_score if high_score is not None else 0, "logged_in": True}
+    )
 
 
 if __name__ == "__main__":

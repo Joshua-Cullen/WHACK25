@@ -64,6 +64,7 @@ const scenarios = [
 let currentScenario = 0;
 let creditScore = 700;
 let highScore = 700;
+let isLoggedIn = false;
 
 const scenarioTextEl = document.getElementById('scenarioText');
 const feedbackEl = document.getElementById('feedback');
@@ -83,10 +84,21 @@ async function loadHighScore() {
     try {
         const response = await fetch('/api/quiz/high');
         const data = await response.json();
-        highScore = data.high_score || 700;
+        isLoggedIn = !!data.logged_in;
+        if (isLoggedIn) {
+            // 0 from the server always means "no scores recorded yet" (real
+            // quiz scores are clamped to 300-850), so 700 is still the right
+            // baseline default here - unlike the snake game, this isn't the
+            // falsy-zero bug, just the normal "fresh account" case.
+            highScore = data.high_score || 700;
+        } else {
+            // Guest: fall back to this browser's local copy.
+            highScore = parseInt(localStorage.getItem('quizHighScore') || '700');
+        }
         highScoreEl.innerText = highScore;
     } catch (e) {
         console.warn("Falling back to local storage.", e);
+        isLoggedIn = false;
         highScore = parseInt(localStorage.getItem('quizHighScore') || '700');
         highScoreEl.innerText = highScore;
     }
@@ -141,8 +153,15 @@ async function nextScenario() {
         if (creditScore > highScore) {
             highScore = creditScore;
             highScoreEl.innerText = highScore;
-            localStorage.setItem('quizHighScore', highScore);
-            await saveScore(highScore);
+            if (isLoggedIn) {
+                // Persist per-user to the backend. Deliberately NOT written to
+                // localStorage here, so a logged-in user's score can never
+                // leak into another (guest) session sharing this browser.
+                await saveScore(highScore);
+            } else {
+                // Guest: keep a local-only fallback.
+                localStorage.setItem('quizHighScore', highScore);
+            }
         }
 
         nextBtn.onclick = restartGame;

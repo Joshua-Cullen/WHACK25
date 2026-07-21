@@ -2,7 +2,6 @@
 .env
 .env.local
 .env.*
-instance/
 .webassets-cache
 
 # Python compilation and caching artifacts
@@ -23,7 +22,11 @@ bin/
 lib/
 include/
 
-# Databases (SQLite specific)
+# Database (SQLite via Flask-SQLAlchemy)
+# Flask-SQLAlchemy resolves relative sqlite:/// URIs into an auto-created
+# instance/ folder at the project root - this ignores that folder and any
+# stray .db files elsewhere so database.db is never committed.
+instance/
 *.db
 *.sqlite3
 *.db-journal

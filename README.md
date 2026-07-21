@@ -43,6 +43,7 @@ The project demonstrates practical software engineering principles by integratin
 
 * Python
 * Flask
+* Flask-SQLAlchemy / SQLAlchemy ORM
 * SQLite
 * Google Gemini 3.5 Flash/Pro API
 
@@ -105,8 +106,8 @@ Features include:
 * Multiple-choice questions
 * Real-world financial situations
 * Score tracking
-* Persistent high scores
-* SQLite database integration
+* Persistent, per-user high scores stored in the database
+* SQLAlchemy/SQLite database integration
 
 Topics include:
 
@@ -140,7 +141,7 @@ Negative actions:
 * Excessive borrowing
 * Defaulting on loans
 
-Each collected item pauses gameplay and presents a short educational explanation describing how that financial decision affects credit health.
+Each collected item pauses gameplay and presents a short educational explanation describing how that financial decision affects credit health. Like the quiz, high scores are tied to the logged-in user's account and persisted in the database; guests without an account get a local-only high score stored in the browser.
 
 ---
 
@@ -192,6 +193,8 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+This installs Flask along with Flask-SQLAlchemy/SQLAlchemy, which the app uses as its database layer.
+
 ---
 
 ## 4. Configure environment variables
@@ -215,6 +218,8 @@ Your `.env` file should **never** be committed to Git.
 ```bash
 python databaseSetup.py
 ```
+
+This uses Flask-SQLAlchemy's `db.create_all()` to build all tables defined in `models.py`. By Flask-SQLAlchemy convention, the SQLite file is created at `instance/database.db` (auto-created on first run, and git-ignored).
 
 ---
 
@@ -254,12 +259,14 @@ The repository is organised into modular components to separate the application'
 ```text
 JAK/
 ├── app.py                          # Main Flask application and API routes
-├── databaseSetup.py                # SQLite database initialisation
+├── models.py                       # SQLAlchemy models (User, Money, QuizScore, GameScore)
+├── databaseSetup.py                # Database initialisation (db.create_all())
 ├── databaseDelete.py               # Development database reset utility
 ├── gemini.py                       # Google Gemini API integration
 ├── pdfHighlighting.py              # PDF annotation engine using PyMuPDF
 ├── requirements.txt                # Project dependencies
 ├── .gitignore                      # Git exclusions
+├── instance/                       # Auto-created by Flask-SQLAlchemy; holds database.db (git-ignored)
 ├── uploads/                        # Uploaded and annotated PDF files
 │
 ├── static/
@@ -386,16 +393,16 @@ Display annotated PDF and AI feedback
 
 # Database
 
-JAK uses **SQLite** as its relational database management system.
-
-The database stores information required for user authentication, financial tracking and quiz functionality.
+JAK uses **SQLite** as its underlying database, accessed through the **Flask-SQLAlchemy** ORM rather than raw SQL. All tables are defined declaratively in `models.py`.
 
 Current database tables include:
 
-* Users
-* Income records
-* Expense records
-* Quiz high scores
+* **`users`** — accounts (`user_id`, `username`, `email`, `password`)
+* **`money`** — income/expense entries (`money_id`, `user_id`, `date`, `description`, `amount`, `type`)
+* **`quiz_scores`** — financial decision quiz scores (`quiz_id`, `user_id`, `score`, `date`)
+* **`game_scores`** — Credit Snake Game high scores (`game_score_id`, `user_id`, `score`, `date`)
+
+All child tables reference `users.user_id` with `ON DELETE CASCADE`, so deleting a user also removes their finance entries and scores.
 
 The database is automatically created using:
 
@@ -403,13 +410,17 @@ The database is automatically created using:
 python databaseSetup.py
 ```
 
-For development purposes, database contents can be reset using:
+This calls `db.create_all()` against the models in `models.py`. By Flask-SQLAlchemy's convention, the SQLite file lives at `instance/database.db`, which is auto-created and git-ignored.
+
+For development purposes, database contents can be reset (all rows deleted, tables kept) using:
 
 ```bash
 python databaseDelete.py
 ```
 
 > **Note:** `databaseDelete.py` should only be used in development, as it removes stored data.
+
+Both the quiz and the Snake game show a **per-user, server-persisted high score** when logged in; when logged out, a local-only high score is shown instead (stored in the browser and never sent to or read from another account).
 
 ---
 
@@ -438,14 +449,14 @@ The interface has been designed with an emphasis on:
 
 # Back-end
 
-The back-end has been developed using **Flask**.
+The back-end has been developed using **Flask**, with **Flask-SQLAlchemy** as the database access layer.
 
 Responsibilities include:
 
 * User authentication
 * Session management
 * API endpoints
-* Database interaction
+* Database interaction via SQLAlchemy models
 * AI integration
 * PDF processing
 * File uploads
@@ -492,7 +503,7 @@ Charts are generated dynamically using **Chart.js**.
 
 The financial literacy quiz reinforces important financial concepts through scenario-based questions.
 
-Scores are stored within the SQLite database, allowing users to monitor their progress over time.
+Scores are stored per-user in the SQLite database via the `QuizScore` model, allowing users to monitor their progress over time from any device once logged in.
 
 The quiz focuses on topics including:
 
@@ -513,6 +524,8 @@ The Snake game introduces financial concepts through interactive gameplay.
 Rather than collecting traditional food items, players encounter financial behaviours that influence their score.
 
 Each item collected triggers a short educational explanation, encouraging users to understand the consequences of positive and negative financial decisions.
+
+High scores are stored per-user via the `GameScore` model, mirroring the quiz's scoring system, so a logged-in player's best score persists across sessions and devices.
 
 The game combines entertainment with financial education to create an engaging learning experience.
 
@@ -540,10 +553,10 @@ The `.env` file is excluded from version control through `.gitignore` and should
 The application supports user authentication to protect personalised data, including:
 
 * Financial records
-* Quiz scores
+* Quiz and game high scores
 * User accounts
 
-Session management is handled by the Flask application.
+Session management is handled by the Flask application, and all per-user database queries (finance entries, quiz scores, game scores) are scoped to `session["user_id"]` so one account can never see or overwrite another's data.
 
 ---
 
@@ -577,21 +590,20 @@ Users should seek advice from a qualified legal professional before signing lega
 
 # Testing
 
-The application has been manually tested throughout development.
+The application has been manually tested throughout development, along with targeted automated smoke tests (using Flask's test client) covering:
 
-Testing included:
-
-* User authentication
+* User authentication (signup, duplicate-email rejection, login)
 * Contract uploads
 * AI contract analysis
 * PDF highlighting
-* Quiz functionality
+* Quiz functionality, including per-user high score isolation
+* Snake game functionality, including per-user high score isolation
 * Financial tracker CRUD operations
 * Database persistence
 * Responsive layouts
 * Cross-page navigation
 
-Future improvements could include automated testing using frameworks such as:
+Future improvements could include a proper automated test suite using frameworks such as:
 
 * `pytest`
 * Flask testing utilities
@@ -631,6 +643,8 @@ For larger-scale deployments, consider migrating to:
 
 * PostgreSQL
 * MySQL
+
+Because the app already uses SQLAlchemy as its ORM, switching the `SQLALCHEMY_DATABASE_URI` to a PostgreSQL/MySQL connection string requires no changes to `models.py` or the application's query logic.
 
 ---
 
@@ -706,7 +720,7 @@ This project provided practical experience in:
 * Full-stack web development
 * Python programming
 * Flask application development
-* Database design using SQLite
+* Database design and ORM modelling using SQLAlchemy/SQLite
 * Front-end development with HTML, CSS and JavaScript
 * API integration
 * Prompt engineering for Large Language Models
@@ -724,6 +738,7 @@ This project was developed as part of a software engineering and hackathon proje
 Open-source libraries and services used include:
 
 * Flask
+* Flask-SQLAlchemy / SQLAlchemy
 * Bootstrap
 * Chart.js
 * Google Gemini API
