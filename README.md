@@ -173,7 +173,7 @@ cd WHACK25
 macOS / Linux
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 ```
 
@@ -316,7 +316,7 @@ This extracted text is prepared for submission to the Google Gemini model.
 
 ## 3. AI Analysis
 
-The extracted contract is analysed using **Google Gemini 2.5 Pro**.
+The extracted contract is analysed using **Google Gemini 3.5 Flash/Pro**.
 
 The model evaluates the contract and produces structured information including:
 
